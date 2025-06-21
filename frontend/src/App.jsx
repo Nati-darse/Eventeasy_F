@@ -1,18 +1,18 @@
 import React from 'react';
-import HomePage from "./Pages/HomePage";
+import HomePage from "./Pages/HomePage.jsx";
 import { Route, Routes } from 'react-router-dom';
-import Classify_SU from './Pages/Classify_SU';
-import Login_org from './Pages/Login_org'; 
-import Login_att from './Pages/Login_att'; 
+import Classify_SU from './Pages/Classify_SU.jsx';
+import Login_org from './Pages/Login_org.jsx'; 
+import Login_att from './Pages/Login_att.jsx'; 
 // import { DarkModeProvider } from './context/DarkModeContext';
-import EmailVerify from './Pages/EmailVerify';
-import Attendee from './Pages/Attendee'; // Ensure this is the correct path to your Attendee component
-import Organizer from './Pages/Organizer'; // Ensure this is the correct path to your Organizer component
-import Admin from './Pages/Admin'; // Ensure this is the correct path to your Admin component
-import UserManagement from './Pages/userManagement';
-import EventManagement from './Pages/eventManagement'; // Ensure this is the correct path to your eventManagement component
-import EventDetail from './Pages/eventDetail'; // Ensure this is the correct path to your eventDetail component
-import AttendeeEventPage from './Pages/attendEvent';
+import EmailVerify from './Pages/EmailVerify.jsx';
+import Attendee from './Pages/Attendee.jsx'; // Ensure this is the correct path to your Attendee component
+import Organizer from './Pages/Organizer.jsx'; // Ensure this is the correct path to your Organizer component
+import Admin from './Pages/Admin.jsx'; // Ensure this is the correct path to your Admin component
+import UserManagement from './Pages/userManagement.jsx';
+import EventManagement from './Pages/eventManagement.jsx'; // Ensure this is the correct path to your eventManagement component
+import EventDetail from './Pages/eventDetail.jsx'; // Ensure this is the correct path to your eventDetail component
+import AttendeeEventPage from './Pages/attendEvent.jsx';
 
 
 export default function App() {
