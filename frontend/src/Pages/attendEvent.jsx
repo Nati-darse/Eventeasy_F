@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import GoogleMapComponent from '../components/GoogleMapComponent';
+import GoogleMapComponent from '../components/GoogleMapComponent.jsx';
 import { motion } from 'framer-motion';
 
 const AttendeeEventPage = () => {

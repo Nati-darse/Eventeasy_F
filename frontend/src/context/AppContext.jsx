@@ -16,14 +16,15 @@ export const AppContextProvider = (props) => {
     getAuthState();
   }, []);
   
+
   const getUserData = async () => {
     try {
       const { data } = await axios.get('http://localhost:5000/Event-Easy/user/data', { withCredentials: true });
   
-      console.log("Fetched user data:", data);
+      console.log("Fetched user data:", data); // Log this to see the full response!
   
       if (data && data.name) {
-        setUserData(data);
+        setUserData(data); // Assuming user data is directly in the response
       } else {
         console.error('Failed to fetch user data: No user data found.');
       }
@@ -31,16 +32,17 @@ export const AppContextProvider = (props) => {
       console.error('Error fetching user data:', error);
     }
   };
-  
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      getUserData();
+      getUserData(); // User is likely still logged in, fetch their data
     } else {
-      setUserData(null);
+      setUserData(null); // No token, so nuke userData
     }
   }, []);
   
+  
+
   const getAuthState = async () => {
     try {
       const { data } = await axios.get('http://localhost:5000/Event-Easy/users/is-auth', { withCredentials: true });
@@ -57,9 +59,10 @@ export const AppContextProvider = (props) => {
     }
   };
 
-  useEffect(() => {
-    getAuthState();
-  }, []);
+useEffect(() => {
+  getAuthState(); // Check auth state on load
+}, []);
+
 
   const value = {
     isLoggedin,

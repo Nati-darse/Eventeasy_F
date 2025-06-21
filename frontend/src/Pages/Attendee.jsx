@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { formatDistanceToNow } from "date-fns";
 import { Link } from 'react-router-dom';
-import GoogleMapComponent from '../components/GoogleMapComponent';
+import GoogleMapComponent from '../components/GoogleMapComponent.jsx';
 
 // Define categories for filtering
 const categories = [
