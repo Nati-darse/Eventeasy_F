@@ -1,10 +1,25 @@
 {
+  "name": "event-easy",
+  "version": "1.0.0",
+  "description": "Event management platform",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "start": "cd backend && npm start",
+    "build": "cd frontend && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "event",
+    "management",
+    "mern"
+  ],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "chapa-nodejs": "^1.2.0",
-    "axios": "^1.9.0",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0",
-    "mongoose": "^8.13.2",
-    "@react-google-maps/api": "^2.19.3"
+    "concurrently": "^8.2.2",
+    "multer-storage-cloudinary": "^4.0.0"
   }
 }
