@@ -51,7 +51,8 @@ const Organizer = ({ user }) => {
       formData.append('videoUrl', video); // raw file
     }
   
-    formData.append('organizer', userData.name);
+    formData.append('organizer', userData?.name || '');
+    formData.append('location', location);
   
     try {
       const res = await axios.post(
@@ -65,6 +66,18 @@ const Organizer = ({ user }) => {
       );
   
       setMsg('✅ Event created successfully!');
+      // Reset form after successful submission
+      setForm({
+        eventName: '',
+        time: '',
+        category: '',
+        pattern: '',
+        description: '',
+        updates: '',
+      });
+      setLocation('');
+      setImage(null);
+      setVideo(null);
     } catch (err) {
       console.error('Event creation error:', err);
       setMsg('❌ Failed to create event.');
@@ -87,6 +100,7 @@ const Organizer = ({ user }) => {
           <input
             type="text"
             name="eventName"
+            value={form.eventName}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             placeholder="Name of the Event"
             onChange={handleChange}
@@ -100,6 +114,7 @@ const Organizer = ({ user }) => {
           <input
             type="datetime-local"
             name="time"
+            value={form.time}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             onChange={handleChange}
             required
@@ -111,6 +126,7 @@ const Organizer = ({ user }) => {
           <label className="block mb-1 text-gray-700 font-semibold">Category</label>
           <select
             name="category"
+            value={form.category}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
             required
@@ -131,6 +147,7 @@ const Organizer = ({ user }) => {
           <input
             type="text"
             name="pattern"
+            value={form.pattern}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
             placeholder="e.g. Workshop / Conference"
             onChange={handleChange}
@@ -144,6 +161,7 @@ const Organizer = ({ user }) => {
           <textarea
             name="description"
             rows="3"
+            value={form.description}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
             placeholder="Tell us about the event..."
             onChange={handleChange}
@@ -167,6 +185,7 @@ const Organizer = ({ user }) => {
           <textarea
             name="updates"
             rows="2"
+            value={form.updates}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
             placeholder="Any new updates?"
             onChange={handleChange}
