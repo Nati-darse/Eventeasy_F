@@ -1,5 +1,4 @@
 const axios = require('axios');
-require('dotenv').config();
 
 /**
  * Chapa Payment Gateway Configuration

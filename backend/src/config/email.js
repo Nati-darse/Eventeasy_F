@@ -1,5 +1,4 @@
 const nodemailer = require('nodemailer');
-require('dotenv').config();
 
 /**
  * Email Configuration
@@ -16,7 +15,7 @@ class EmailConfig {
    * @returns {object} Nodemailer transporter
    */
   createTransporter() {
-    return nodemailer.createTransport({
+    return nodemailer.createTransporter({
       host: 'smtp-relay.brevo.com',
       port: 587,
       service: 'Gmail',
