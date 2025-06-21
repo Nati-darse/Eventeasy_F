@@ -16,15 +16,14 @@ export const AppContextProvider = (props) => {
     getAuthState();
   }, []);
   
-
   const getUserData = async () => {
     try {
       const { data } = await axios.get('http://localhost:5000/Event-Easy/user/data', { withCredentials: true });
   
-      console.log("Fetched user data:", data); // Log this to see the full response!
+      console.log("Fetched user data:", data);
   
       if (data && data.name) {
-        setUserData(data); // Assuming user data is directly in the response
+        setUserData(data);
       } else {
         console.error('Failed to fetch user data: No user data found.');
       }
@@ -36,9 +35,9 @@ export const AppContextProvider = (props) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      getUserData(); // User is likely still logged in, fetch their data
+      getUserData();
     } else {
-      setUserData(null); // No token, so nuke userData
+      setUserData(null);
     }
   }, []);
   
@@ -59,7 +58,7 @@ export const AppContextProvider = (props) => {
   };
 
   useEffect(() => {
-    getAuthState(); // Check auth state on load
+    getAuthState();
   }, []);
 
   const value = {

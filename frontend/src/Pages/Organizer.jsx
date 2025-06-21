@@ -1,9 +1,9 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import { AppContent } from '../context/AppContext';
+import { AppContent } from '../context/AppContext.jsx';
 
 const Organizer = ({ user }) => {
-  const { userData } = useContext(AppContent); // ✅ useContext must be here!
+  const { userData } = useContext(AppContent);
 
   const [form, setForm] = useState({
     eventName: '',
@@ -27,12 +27,12 @@ const Organizer = ({ user }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (e.target.name === 'imageUrl') {
-      setImage(file); // store raw File object
+      setImage(file);
     } else if (e.target.name === 'videoUrl') {
       setVideo(file);
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -44,11 +44,11 @@ const Organizer = ({ user }) => {
     });
   
     if (image) {
-      formData.append('imageUrl', image); // raw file
+      formData.append('imageUrl', image);
     }
   
     if (video) {
-      formData.append('videoUrl', video); // raw file
+      formData.append('videoUrl', video);
     }
   
     formData.append('organizer', userData?.name || '');
@@ -85,7 +85,6 @@ const Organizer = ({ user }) => {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg mt-10 border border-gray-200">
@@ -201,7 +200,6 @@ const Organizer = ({ user }) => {
             accept="image/*"
             className="w-full px-3 py-2 border border-dashed border-gray-400 rounded-lg bg-gray-50"
             onChange={handleFileChange}
-           
           />
         </div>
 

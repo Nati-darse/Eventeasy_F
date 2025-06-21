@@ -1,8 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import PaymentService from '../services/paymentService';
 import { motion } from 'framer-motion';
+
+const PaymentService = {
+  async initializePayment(eventId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `http://localhost:5000/Event-Easy/payment/initialize/${eventId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Payment initialization error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  async getPaymentStatus(txRef) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `http://localhost:5000/Event-Easy/payment/status/${txRef}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Get payment status error:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+};
 
 const PaymentPage = () => {
   const { eventId } = useParams();
