@@ -13,6 +13,7 @@ import EventManagement from './Pages/eventManagement.jsx';
 import EventDetail from './Pages/eventDetail.jsx';
 import AttendeeEventPage from './Pages/attendEvent.jsx';
 import PaymentPage from './Pages/PaymentPage.jsx';
+import SearchResults from './Pages/SearchResults.jsx';
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/attend/:id" element={<AttendeeEventPage/>}/>
         <Route path="/payment/:eventId" element={<PaymentPage />} />
         <Route path="/payment/status" element={<PaymentPage />} />
+        <Route path="/search" element={<SearchResults />} />
       </Routes>
     </div>
   );
