@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
-import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaFilter, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaFilter, FaListUl, FaMapMarked } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import GoogleMapComponent from '../components/GoogleMapComponent.jsx';
 import Navbar from '../Components/navBar.jsx';
@@ -10,6 +10,7 @@ import Navbar from '../Components/navBar.jsx';
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const navigate = useNavigate();
   
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,7 @@ const SearchResults = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [dateFilter, setDateFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(query);
   
   const categories = [
     'All',
@@ -67,7 +69,8 @@ const SearchResults = () => {
           results = results.filter(event => 
             event.eventName?.toLowerCase().includes(searchTerm) || 
             event.description?.toLowerCase().includes(searchTerm) ||
-            event.category?.toLowerCase().includes(searchTerm)
+            event.category?.toLowerCase().includes(searchTerm) ||
+            (event.location?.address && event.location.address.toLowerCase().includes(searchTerm))
           );
         }
         
@@ -92,6 +95,11 @@ const SearchResults = () => {
     
     fetchSearchResults();
   }, [query]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+  };
   
   // Apply filters to events
   const getFilteredEvents = () => {
@@ -175,10 +183,35 @@ const SearchResults = () => {
                 onClick={toggleMapView}
                 className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
               >
+                {showMap ? <FaListUl className="mr-1" /> : <FaMapMarked className="mr-1" />}
                 {showMap ? 'List View' : 'Map View'}
               </button>
             </div>
           </div>
+          
+          {/* Search Form */}
+          <form onSubmit={handleSearch} className="mt-4">
+            <div className="flex flex-col md:flex-row gap-2">
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaSearch className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for events, locations, categories..."
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors"
+              >
+                Search
+              </button>
+            </div>
+          </form>
           
           {/* Filters */}
           {showFilters && (

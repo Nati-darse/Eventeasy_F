@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaCalendarAlt, FaBolt, FaBell, FaMapMarkerAlt, FaUsers, FaLock, FaStar, FaSearch } from 'react-icons/fa';
 import { FiCalendar, FiMapPin } from 'react-icons/fi';
 import bg_1 from '../assets/bg_1.jpg'; 
@@ -14,7 +14,7 @@ const EventEasyLanding = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [bgImage, setBgImage] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [locationQuery, setLocationQuery] = useState('');
+  const navigate = useNavigate();
   const images = [bg_1, bg_2, bg_3];
   
   const cursorX = useMotionValue(-100);
@@ -52,13 +52,9 @@ const EventEasyLanding = () => {
   // Handle search form submission
   const handleSearch = (e) => {
     e.preventDefault();
-    if (!searchQuery && !locationQuery) return;
+    if (!searchQuery) return;
     
-    const searchParams = new URLSearchParams();
-    if (searchQuery) searchParams.set('q', searchQuery);
-    if (locationQuery) searchParams.set('location', locationQuery);
-    
-    window.location.href = `/search?${searchParams.toString()}`;
+    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
   };
 
   // Features data
@@ -169,20 +165,7 @@ const EventEasyLanding = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for events..."
-                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-              
-              <div className="relative flex-grow">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaMapMarkerAlt className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  placeholder="Location"
+                  placeholder="Search for events, locations, categories..."
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>

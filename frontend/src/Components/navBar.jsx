@@ -71,6 +71,22 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
           <span className="hidden sm:inline">Event Easy</span>
         </Link>
 
+        {/* Navigation Links - Desktop */}
+        <div className="hidden md:flex space-x-6 items-center">
+          <a href="/#features" className="font-medium hover:text-orange-600 dark:hover:text-orange-400 transition">
+            Features
+          </a>
+          <a href="/#events" className="font-medium hover:text-orange-600 dark:hover:text-orange-400 transition">
+            Events
+          </a>
+          <a href="/#how-it-works" className="font-medium hover:text-orange-600 dark:hover:text-orange-400 transition">
+            How It Works
+          </a>
+          <a href="/#testimonials" className="font-medium hover:text-orange-600 dark:hover:text-orange-400 transition">
+            Testimonials
+          </a>
+        </div>
+
         {/* Search - Desktop */}
         <div className="hidden md:flex flex-1 mx-6 max-w-xl">
           <form onSubmit={handleSearch} className="w-full">
@@ -104,7 +120,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
         </div>
 
         {/* Right Items - Desktop */}
-        <div className="hidden md:flex space-x-6 items-center">
+        <div className="hidden md:flex items-center space-x-4">
           {userData ? (
             <div className="relative">
               <button 
@@ -231,6 +247,19 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
       {/* Mobile Menu Links */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-gray-900 shadow-md px-6 py-4 space-y-3 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
+          <a href="/#features" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
+            Features
+          </a>
+          <a href="/#events" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
+            Events
+          </a>
+          <a href="/#how-it-works" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
+            How It Works
+          </a>
+          <a href="/#testimonials" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
+            Testimonials
+          </a>
+          
           {!userData ? (
             <>
               <Link to="/Login_Attendee" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
@@ -265,24 +294,6 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
               </button>
             </>
           )}
-          
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-            <Link to="/" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
-              Home
-            </Link>
-            <a href="#features" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
-              Features
-            </a>
-            <a href="#events" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
-              Events
-            </a>
-            <a href="#how-it-works" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
-              How It Works
-            </a>
-            <a href="#testimonials" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
-              Testimonials
-            </a>
-          </div>
         </div>
       )}
       
