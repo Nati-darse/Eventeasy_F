@@ -73,22 +73,22 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
 
         {/* Navigation Links - Desktop */}
         <div className="hidden md:flex space-x-6 items-center">
-          <a href="/#features" className="font-medium hover:text-orange-600 dark:hover:text-orange-400 transition">
+          <a href="/#features" className="font-semibold hover:text-orange-600 dark:hover:text-orange-400 transition">
             Features
           </a>
-          <a href="/#events" className="font-medium hover:text-orange-600 dark:hover:text-orange-400 transition">
+          <a href="/#events" className="font-semibold hover:text-orange-600 dark:hover:text-orange-400 transition">
             Events
           </a>
-          <a href="/#how-it-works" className="font-medium hover:text-orange-600 dark:hover:text-orange-400 transition">
+          <a href="/#how-it-works" className="font-semibold hover:text-orange-600 dark:hover:text-orange-400 transition">
             How It Works
           </a>
-          <a href="/#testimonials" className="font-medium hover:text-orange-600 dark:hover:text-orange-400 transition">
+          <a href="/#testimonials" className="font-semibold hover:text-orange-600 dark:hover:text-orange-400 transition">
             Testimonials
           </a>
         </div>
 
         {/* Search - Desktop */}
-        <div className="hidden md:flex flex-1 mx-6 max-w-xl">
+        {/* <div className="hidden md:flex flex-1 mx-6 max-w-xl">
           <form onSubmit={handleSearch} className="w-full">
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -117,7 +117,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
               </button>
             </motion.div>
           </form>
-        </div>
+        </div> */}
 
         {/* Right Items - Desktop */}
         <div className="hidden md:flex items-center space-x-4">
@@ -215,7 +215,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
         </div>
       </div>
 
-      {/* Mobile Search */}
+      {/* Mobile Search on nav bar */}
       <div className="md:hidden w-full px-4 py-2 border-t border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSearch} className="w-full">
           <div className="flex border border-orange-300 dark:border-orange-500 rounded-full overflow-hidden bg-white dark:bg-gray-800">

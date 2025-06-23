@@ -154,7 +154,7 @@ const EventEasyLanding = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="max-w-3xl mx-auto mb-8"
+            className="max-w-3xl mx-auto mb-8  hidden md:block"
           >
             <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-2">
               <div className="relative flex-grow">
@@ -204,7 +204,7 @@ const EventEasyLanding = () => {
             ) : (
               <Link 
                 to="/Login_Attendee"
-                className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition shadow-lg"
+                className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-orange-200 transition shadow-lg"
               >
                 Find Events
               </Link>
