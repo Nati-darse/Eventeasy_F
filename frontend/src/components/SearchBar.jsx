@@ -5,20 +5,18 @@ import { motion } from 'framer-motion';
 
 const SearchBar = ({ className, variant = 'default' }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [locationQuery, setLocationQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = (e) => {
     e.preventDefault();
     
-    if (!searchQuery && !locationQuery) return;
+    if (!searchQuery) return;
     
     setIsSearching(true);
     
     const searchParams = new URLSearchParams();
     if (searchQuery) searchParams.set('q', searchQuery);
-    if (locationQuery) searchParams.set('location', locationQuery);
     
     navigate(`/search?${searchParams.toString()}`);
     setIsSearching(false);
@@ -33,7 +31,7 @@ const SearchBar = ({ className, variant = 'default' }) => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search events or locations..."
+            placeholder="Search events, locations, categories..."
             className="w-full py-2 pl-10 pr-4 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -69,19 +67,9 @@ const SearchBar = ({ className, variant = 'default' }) => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search events..."
+          placeholder="Search events, locations, categories..."
           className="w-full py-3 px-2 text-sm bg-transparent outline-none placeholder-orange-400 dark:placeholder-orange-300 text-gray-800 dark:text-gray-200"
         />
-        <div className="flex items-center px-3 border-l border-orange-200 dark:border-orange-700">
-          <FaMapMarkerAlt className="w-4 h-4 mr-2 text-orange-500" />
-          <input
-            type="text"
-            value={locationQuery}
-            onChange={(e) => setLocationQuery(e.target.value)}
-            placeholder="Location"
-            className="bg-transparent outline-none text-sm w-28 placeholder-orange-400 dark:placeholder-orange-300 text-gray-800 dark:text-gray-200"
-          />
-        </div>
         <button 
           type="submit"
           className="bg-orange-500 hover:bg-orange-600 text-white px-6 transition-all flex items-center justify-center"

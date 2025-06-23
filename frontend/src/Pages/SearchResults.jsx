@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
-import { FaSearch, FaMapMarker, FaCalendarAlt, FaFilter, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaFilter, FaTimes } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import GoogleMapComponent from '../components/GoogleMapComponent.jsx';
+import Navbar from '../Components/navBar.jsx';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,7 @@ const SearchResults = () => {
   const [error, setError] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const [mapLocations, setMapLocations] = useState([]);
+  const [darkMode, setDarkMode] = useState(false);
   
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -31,6 +33,22 @@ const SearchResults = () => {
     'Professional & Educational Events',
     'Religious',
   ];
+
+  useEffect(() => {
+    // Check if dark mode is stored in localStorage
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode === 'true') {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    document.documentElement.classList.toggle('dark', newMode);
+    localStorage.setItem('darkMode', newMode);
+  };
 
   useEffect(() => {
     const fetchSearchResults = async () => {
@@ -135,28 +153,12 @@ const SearchResults = () => {
   const toggleMapView = () => {
     setShowMap(!showMap);
   };
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-20 flex justify-center items-start">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mt-10"></div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="min-h-screen pt-20 flex justify-center items-start">
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg mt-10">
-          {error}
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen pt-20 bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+      
+      <div className="container mx-auto px-4 py-6 pt-24">
         {/* Search Header */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -245,8 +247,22 @@ const SearchResults = () => {
           )}
         </div>
         
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+          </div>
+        )}
+        
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg my-6">
+            {error}
+          </div>
+        )}
+        
         {/* Map View */}
-        {showMap && (
+        {!loading && !error && showMap && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
             <div className="h-[500px]">
               <GoogleMapComponent
@@ -263,7 +279,7 @@ const SearchResults = () => {
         )}
         
         {/* Results List */}
-        {!showMap && (
+        {!loading && !error && !showMap && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.length > 0 ? (
               filteredEvents.map((event) => (
@@ -313,7 +329,7 @@ const SearchResults = () => {
                     
                     {event.location && (
                       <p className="mt-2 text-gray-500 dark:text-gray-400 text-sm flex items-start">
-                        <FaMapMarker className="mr-1 mt-1 flex-shrink-0" />
+                        <FaMapMarkerAlt className="mr-1 mt-1 flex-shrink-0" />
                         <span className="line-clamp-1">
                           {event.location.address || 'Location available'}
                         </span>

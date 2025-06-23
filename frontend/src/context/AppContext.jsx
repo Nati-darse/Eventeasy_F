@@ -7,6 +7,7 @@ export const AppContextProvider = (props) => {
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -29,11 +30,15 @@ export const AppContextProvider = (props) => {
   
       if (data && data.name) {
         setUserData(data);
+        return data;
       } else {
         console.error('Failed to fetch user data: No user data found.');
+        return null;
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
+      setError('Failed to fetch user data');
+      return null;
     }
   };
 
@@ -63,6 +68,7 @@ export const AppContextProvider = (props) => {
       console.error('Error fetching auth state:', error);
       // Clear token if authentication fails
       localStorage.removeItem('token');
+      setError('Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -74,7 +80,9 @@ export const AppContextProvider = (props) => {
     userData,
     setUserData,
     getUserData,
-    loading
+    loading,
+    error,
+    setError
   };
 
   return (

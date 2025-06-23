@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import HomePage from "./Pages/HomePage.jsx";
 import Classify_SU from './Pages/Classify_SU.jsx';
@@ -16,8 +16,19 @@ import PaymentPage from './Pages/PaymentPage.jsx';
 import SearchResults from './Pages/SearchResults.jsx';
 
 export default function App() {
+  // Check for dark mode preference
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode === 'true') {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
   return (
-    <div>
+    <div className={darkMode ? 'dark' : ''}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/Classify" element={<Classify_SU />} />

@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   FaCalendarAlt,
   FaSearch,
-  FaMapMarker,
+  FaMapMarkerAlt,
   FaSun,
   FaMoon,
   FaBars,
@@ -17,11 +17,8 @@ import axios from 'axios';
 
 const Navbar = ({ darkMode, toggleDarkMode }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [locationQuery, setLocationQuery] = useState('');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   
   const { userData, setUserData, setIsLoggedin } = useContext(AppContent);
@@ -29,57 +26,21 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
   const location = useLocation();
 
   const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen);
-  const handleSearchToggle = () => setSearchOpen(!searchOpen);
   const toggleUserMenu = () => setUserMenuOpen(!userMenuOpen);
 
   // Close mobile menu when route changes
   useEffect(() => {
     setMobileMenuOpen(false);
-    setSearchOpen(false);
   }, [location.pathname]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     
-    if (!searchQuery && !locationQuery) return;
+    if (!searchQuery) return;
     
     setIsSearching(true);
-    
-    try {
-      const response = await axios.get('http://localhost:5000/Event-Easy/Event/events');
-      let events = Array.isArray(response.data) ? response.data : [];
-      
-      // Filter by search query (case insensitive)
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        events = events.filter(event => 
-          event.eventName?.toLowerCase().includes(query) || 
-          event.description?.toLowerCase().includes(query) ||
-          event.category?.toLowerCase().includes(query)
-        );
-      }
-      
-      // Filter by location
-      if (locationQuery) {
-        const location = locationQuery.toLowerCase();
-        events = events.filter(event => {
-          // Check if location exists in any location-related fields
-          return (
-            (event.location?.address && event.location.address.toLowerCase().includes(location)) ||
-            (typeof event.location === 'string' && event.location.toLowerCase().includes(location))
-          );
-        });
-      }
-      
-      setSearchResults(events);
-      
-      // Navigate to search results page with query parameters
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}&location=${encodeURIComponent(locationQuery)}`);
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setIsSearching(false);
-    }
+    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    setIsSearching(false);
   };
 
   const logout = async () => {
@@ -125,19 +86,9 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search events..."
+                placeholder="Search events, locations, categories..."
                 className="w-full py-2 px-2 text-sm bg-transparent outline-none placeholder-orange-400 dark:placeholder-orange-300 text-gray-800 dark:text-gray-200"
               />
-              <div className="flex items-center px-3 border-l border-orange-200 dark:border-orange-700">
-                <FaMapMarker className="w-4 h-4 mr-2 text-orange-500" />
-                <input
-                  type="text"
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  placeholder="Location"
-                  className="bg-transparent outline-none text-sm w-28 placeholder-orange-400 dark:placeholder-orange-300 text-gray-800 dark:text-gray-200"
-                />
-              </div>
               <button 
                 type="submit"
                 className="bg-orange-500 hover:bg-orange-600 text-white px-4 transition-all flex items-center justify-center"
@@ -260,7 +211,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search events..."
+              placeholder="Search events, locations..."
               className="w-full py-2 px-2 text-sm bg-transparent outline-none placeholder-orange-400 dark:placeholder-orange-300 text-gray-800 dark:text-gray-200"
             />
             <button 
