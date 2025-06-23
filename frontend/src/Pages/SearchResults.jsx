@@ -10,7 +10,6 @@ import Navbar from '../Components/navBar.jsx';
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const locationQuery = searchParams.get('location') || '';
   
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,18 +71,6 @@ const SearchResults = () => {
           );
         }
         
-        // Filter by location
-        if (locationQuery) {
-          const location = locationQuery.toLowerCase();
-          results = results.filter(event => {
-            // Check if location exists in any location-related fields
-            return (
-              (event.location?.address && event.location.address.toLowerCase().includes(location)) ||
-              (typeof event.location === 'string' && event.location.toLowerCase().includes(location))
-            );
-          });
-        }
-        
         setEvents(results);
         
         // Prepare map locations
@@ -104,7 +91,7 @@ const SearchResults = () => {
     };
     
     fetchSearchResults();
-  }, [query, locationQuery]);
+  }, [query]);
   
   // Apply filters to events
   const getFilteredEvents = () => {
@@ -168,7 +155,6 @@ const SearchResults = () => {
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
                 {query && <span>Query: <span className="font-medium">{query}</span></span>}
-                {locationQuery && <span> • Location: <span className="font-medium">{locationQuery}</span></span>}
                 {filteredEvents.length > 0 ? 
                   <span> • {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found</span> : 
                   <span> • No events found</span>
