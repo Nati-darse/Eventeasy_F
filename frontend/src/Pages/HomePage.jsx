@@ -1,16 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useScroll } from 'framer-motion';
+import React, { useEffect, useState, useContext } from 'react';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { FaCalendarAlt, FaBolt, FaBell, FaMapMarkerAlt, FaUsers, FaLock, FaStar, FaSearch, FaMapMarker } from 'react-icons/fa';
+import { FaCalendarAlt, FaBolt, FaBell, FaMapMarkerAlt, FaUsers, FaLock, FaStar, FaSearch } from 'react-icons/fa';
 import { FiCalendar, FiMapPin } from 'react-icons/fi';
 import bg_1 from '../assets/bg_1.jpg'; 
 import bg_2 from '../assets/bg_2.webp'; 
 import bg_3 from '../assets/bg_3.jpg';
 import Navbar from '../Components/navBar.jsx';
+import { AppContent } from '../context/AppContext.jsx';
 
 const EventEasyLanding = () => {
+  const { userData } = useContext(AppContent);
   const [darkMode, setDarkMode] = useState(false);
   const [bgImage, setBgImage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [locationQuery, setLocationQuery] = useState('');
   const images = [bg_1, bg_2, bg_3];
   
   const cursorX = useMotionValue(-100);
@@ -45,6 +49,17 @@ const EventEasyLanding = () => {
     localStorage.setItem('darkMode', newMode);
   };
 
+  // Handle search form submission
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!searchQuery && !locationQuery) return;
+    
+    const searchParams = new URLSearchParams();
+    if (searchQuery) searchParams.set('q', searchQuery);
+    if (locationQuery) searchParams.set('location', locationQuery);
+    
+    window.location.href = `/search?${searchParams.toString()}`;
+  };
 
   // Features data
   const features = [
@@ -98,7 +113,7 @@ const EventEasyLanding = () => {
     <div className="font-sans text-gray-900 dark:text-gray-100 min-h-screen">
       {/* Custom Cursor */}
       <motion.div
-        className="fixed w-8 h-8 border-2 border-orange-400 rounded-full pointer-events-none z-50"
+        className="fixed w-8 h-8 border-2 border-orange-400 rounded-full pointer-events-none z-50 hidden md:block"
         style={{
           x: cursorXSpring,
           y: cursorYSpring,
@@ -137,25 +152,90 @@ const EventEasyLanding = () => {
           >
             Event Easy connects you with the best concerts, workshops, sports games, and more in your area.
           </motion.p>
+          
+          {/* Hero Search Bar */}
           <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
-                className="flex flex-col sm:flex-row justify-center gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="max-w-3xl mx-auto mb-8"
+          >
+            <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-2">
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaSearch className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for events..."
+                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaMapMarkerAlt className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  placeholder="Location"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              
+              <button
+                type="submit"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg transition-colors"
               >
+                Search
+              </button>
+            </form>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="flex flex-col sm:flex-row justify-center gap-4"
+          >
+            {userData ? (
+              userData.role === 'attendee' ? (
                 <Link 
-                  to="/Login_Attendee" // replace with your actual route
+                  to="/Attendee"
                   className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition shadow-lg"
                 >
-                  Find Events
+                  Browse Events
                 </Link>
+              ) : (
                 <Link 
-                  to="/Login_Organizer" // replace with your actual route
-                  className="bg-orange-500 text-white px-8 py-3 rounded-full font-bold hover:bg-orange-600 transition shadow-lg"
+                  to="/Organizer_Dashboard"
+                  className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition shadow-lg"
                 >
-                  Organize Event
+                  Dashboard
                 </Link>
-              </motion.div>
+              )
+            ) : (
+              <Link 
+                to="/Login_Attendee"
+                className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition shadow-lg"
+              >
+                Find Events
+              </Link>
+            )}
+            
+            {!userData || userData.role !== 'organizer' ? (
+              <Link 
+                to={userData ? "/Organizer_Dashboard" : "/Login_Organizer"}
+                className="bg-orange-500 text-white px-8 py-3 rounded-full font-bold hover:bg-orange-600 transition shadow-lg"
+              >
+                Organize Event
+              </Link>
+            ) : null}
+          </motion.div>
         </div>
       </section>
 
@@ -196,7 +276,6 @@ const EventEasyLanding = () => {
           </div>
         </div>
       </section>
-
 
       {/* How It Works Section */}
       <section id="how-it-works" className="py-20 bg-gray-50 dark:bg-gray-800">
@@ -315,9 +394,12 @@ const EventEasyLanding = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <a href="#" className="inline-block bg-orange-600 text-white px-8 py-3 rounded-full font-bold hover:bg-orange-700 transition shadow-lg">
+            <Link 
+              to="/search"
+              className="inline-block bg-orange-600 text-white px-8 py-3 rounded-full font-bold hover:bg-orange-700 transition shadow-lg"
+            >
               View All Events
-            </a>
+            </Link>
           </motion.div>
         </div>
       </section>
@@ -360,29 +442,30 @@ const EventEasyLanding = () => {
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-orange-500 to-orange-600">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="container mx-auto text-center"
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="container mx-auto text-center px-4"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            Ready to Experience the Difference?
+          </h2>
+          <p className="text-orange-100 text-xl mb-8 max-w-2xl mx-auto">
+            Join thousands of event organizers and attendees using Event Easy
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-8 py-3 bg-white text-orange-600 font-bold rounded-full shadow-lg"
+            onClick={() => navigate('/Classify')}
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Ready to Experience the Difference?
-            </h2>
-            <p className="text-orange-100 text-xl mb-8 max-w-2xl mx-auto">
-              Join thousands of event organizers and attendees using Event Easy
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 bg-white text-orange-600 font-bold rounded-full shadow-lg"
-            >
-              Get Started Today
-            </motion.button>
-          </motion.div>
-        </section>
+            Get Started Today
+          </motion.button>
+        </motion.div>
+      </section>
 
-        {/* Footer */}
-        <footer className="py-12 bg-gray-800 text-white">
+      {/* Footer */}
+      <footer className="py-12 bg-gray-800 text-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
