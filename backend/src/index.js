@@ -9,6 +9,8 @@ const eventRouter = require('./routes/eventRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const reportRouter = require('./routes/reportRoutes');
 const paymentRouter = require('./routes/paymentRoutes');
+const authRouter = require('./routes/authRoutes');
+const adminRouter = require('./routes/adminRoutes');
 
 const app = express();
 
@@ -31,6 +33,8 @@ app.use("/Event-Easy/Event", eventRouter);
 app.use('/Event-Easy/review', reviewRouter);
 app.use('/Event-Easy/report', reportRouter);
 app.use('/Event-Easy/payment', paymentRouter);
+app.use('/Event-Easy/auth', authRouter);
+app.use('/Event-Easy/admin', adminRouter);
 
 // Start server after DB connection
 const startServer = async () => {

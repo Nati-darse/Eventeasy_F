@@ -29,19 +29,36 @@ const userSchema = new mongoose.Schema({
 
   password: {
     type: String,
-    required: [true, 'Password is required'],
+    required: function() {
+      return !this.googleId; // Password not required for Google users
+    },
     minlength: [6, 'Password must be at least 6 characters'],
     select: false, // Don't include password in queries by default
+  },
+
+  // Google OAuth fields
+  googleId: {
+    type: String,
+    sparse: true, // Allow multiple null values
   },
 
   role: {
     type: String,
     enum: {
-      values: ['attendee', 'organizer', 'admin'],
-      message: 'Role must be either attendee, organizer, or admin',
+      values: ['attendee', 'organizer', 'admin', 'super_admin'],
+      message: 'Role must be attendee, organizer, admin, or super_admin',
     },
     default: 'attendee',
     required: true,
+  },
+
+  // Admin permissions for regular admins
+  adminPermissions: {
+    canManageUsers: { type: Boolean, default: false },
+    canManageEvents: { type: Boolean, default: false },
+    canManageReports: { type: Boolean, default: false },
+    canViewAnalytics: { type: Boolean, default: false },
+    canModerateContent: { type: Boolean, default: false },
   },
 
   profilePicture: {
@@ -99,6 +116,11 @@ const userSchema = new mongoose.Schema({
       email: { type: Boolean, default: true },
       push: { type: Boolean, default: true },
     },
+    language: {
+      type: String,
+      enum: ['en', 'am'],
+      default: 'en',
+    },
   },
 
   // Activity tracking
@@ -107,6 +129,19 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+
+  // Admin management fields
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+
+  isSuspended: {
+    type: Boolean,
+    default: false,
+  },
+
+  suspensionReason: String,
 
 }, {
   timestamps: true,
@@ -118,13 +153,14 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ isVerified: 1 });
+userSchema.index({ googleId: 1 });
 
 /**
  * Pre-save middleware to hash password
  */
 userSchema.pre('save', async function(next) {
-  // Only hash password if it's modified
-  if (!this.isModified('password')) return next();
+  // Only hash password if it's modified and exists
+  if (!this.isModified('password') || !this.password) return next();
 
   try {
     const saltRounds = parseInt(process.env.SALT_ROUNDS) || 12;
@@ -141,6 +177,7 @@ userSchema.pre('save', async function(next) {
  * @returns {Promise<boolean>} Password match result
  */
 userSchema.methods.comparePassword = async function(candidatePassword) {
+  if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };
 
@@ -218,6 +255,17 @@ userSchema.methods.clearOTP = function(type = 'verify') {
 };
 
 /**
+ * Instance method to check if user has admin permission
+ * @param {string} permission - Permission to check
+ * @returns {boolean} Whether user has permission
+ */
+userSchema.methods.hasPermission = function(permission) {
+  if (this.role === 'super_admin') return true;
+  if (this.role !== 'admin') return false;
+  return this.adminPermissions[permission] || false;
+};
+
+/**
  * Virtual for user's full profile
  */
 userSchema.virtual('profile').get(function() {
@@ -229,6 +277,7 @@ userSchema.virtual('profile').get(function() {
     profilePicture: this.profilePicture,
     isVerified: this.isVerified,
     preferences: this.preferences,
+    adminPermissions: this.adminPermissions,
     createdAt: this.createdAt,
   };
 });
@@ -240,6 +289,15 @@ userSchema.virtual('profile').get(function() {
  */
 userSchema.statics.findByEmail = function(email) {
   return this.findOne({ email: email.toLowerCase() });
+};
+
+/**
+ * Static method to find user by Google ID
+ * @param {string} googleId - Google ID
+ * @returns {Promise<User>} User document
+ */
+userSchema.statics.findByGoogleId = function(googleId) {
+  return this.findOne({ googleId });
 };
 
 /**

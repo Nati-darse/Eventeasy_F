@@ -9,6 +9,7 @@ import Attendee from './Pages/Attendee.jsx';
 import Organizer from './Pages/Organizer.jsx';
 import OrganizerAttendees from './Pages/OrganizerAttendees.jsx';
 import Admin from './Pages/Admin.jsx';
+import SuperAdmin from './Pages/SuperAdmin.jsx';
 import UserManagement from './Pages/userManagement.jsx';
 import EventManagement from './Pages/eventManagement.jsx';
 import EventDetail from './Pages/eventDetail.jsx';
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/Organizer_Dashboard" element={<Organizer />} />
         <Route path="/Organizer_Dashboard/attendees" element={<OrganizerAttendees />} />
         <Route path="/admin" element={<Admin />}/>
+        <Route path="/super-admin" element={<SuperAdmin />}/>
         <Route path="/admin/user-management" element={<UserManagement/>}/>
         <Route path="/admin/event-management" element={<EventManagement />} />
         <Route path="/events/:eventId" element={<EventDetail />} />

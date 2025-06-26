@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   FaCalendarAlt,
-  FaSearch,
   FaSun,
   FaMoon,
   FaBars,
@@ -12,13 +11,12 @@ import {
   FaSignOutAlt,
 } from 'react-icons/fa';
 import { AppContent } from '../context/AppContext.jsx';
+import GoogleTranslate from './GoogleTranslate.jsx';
 import axios from 'axios';
 
 const Navbar = ({ darkMode, toggleDarkMode }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
   
   const { userData, setUserData, setIsLoggedin } = useContext(AppContent);
   const navigate = useNavigate();
@@ -31,16 +29,6 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    
-    if (!searchQuery) return;
-    
-    setIsSearching(true);
-    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-    setIsSearching(false);
-  };
 
   const logout = async () => {
     try {
@@ -87,40 +75,11 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
           </a>
         </div>
 
-        {/* Search - Desktop */}
-        {/* <div className="hidden md:flex flex-1 mx-6 max-w-xl">
-          <form onSubmit={handleSearch} className="w-full">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="flex w-full border border-orange-300 dark:border-orange-500 rounded-full overflow-hidden bg-white dark:bg-gray-800"
-            >
-              <div className="flex items-center px-4 text-orange-500">
-                <FaSearch className="w-4 h-4" />
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search events, locations, categories..."
-                className="w-full py-2 px-2 text-sm bg-transparent outline-none placeholder-orange-400 dark:placeholder-orange-300 text-gray-800 dark:text-gray-200"
-              />
-              <button 
-                type="submit"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 transition-all flex items-center justify-center"
-                disabled={isSearching}
-              >
-                {isSearching ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <FaSearch className="w-4 h-4" />
-                )}
-              </button>
-            </motion.div>
-          </form>
-        </div> */}
-
         {/* Right Items - Desktop */}
         <div className="hidden md:flex items-center space-x-4">
+          {/* Google Translate */}
+          <GoogleTranslate />
+          
           {userData ? (
             <div className="relative">
               <button 
@@ -148,6 +107,11 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
                   {userData.role === 'admin' && (
                     <Link to="/admin" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                       Admin Panel
+                    </Link>
+                  )}
+                  {userData.role === 'super_admin' && (
+                    <Link to="/super-admin" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      Super Admin
                     </Link>
                   )}
                   <button 
@@ -215,35 +179,6 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
         </div>
       </div>
 
-      {/* Mobile Search on nav bar */}
-      <div className="md:hidden w-full px-4 py-2 border-t border-gray-200 dark:border-gray-700">
-        <form onSubmit={handleSearch} className="w-full">
-          <div className="flex border border-orange-300 dark:border-orange-500 rounded-full overflow-hidden bg-white dark:bg-gray-800">
-            <div className="flex items-center px-3 text-orange-500">
-              <FaSearch className="w-4 h-4" />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search events, locations..."
-              className="w-full py-2 px-2 text-sm bg-transparent outline-none placeholder-orange-400 dark:placeholder-orange-300 text-gray-800 dark:text-gray-200"
-            />
-            <button 
-              type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 transition-all flex items-center justify-center"
-              disabled={isSearching}
-            >
-              {isSearching ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <FaSearch className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-
       {/* Mobile Menu Links */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-gray-900 shadow-md px-6 py-4 space-y-3 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
@@ -259,6 +194,11 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
           <a href="/#testimonials" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
             Testimonials
           </a>
+          
+          {/* Google Translate - Mobile */}
+          <div className="py-2">
+            <GoogleTranslate />
+          </div>
           
           {!userData ? (
             <>
@@ -284,6 +224,11 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
               {userData.role === 'admin' && (
                 <Link to="/admin" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
                   Admin Panel
+                </Link>
+              )}
+              {userData.role === 'super_admin' && (
+                <Link to="/super-admin" className="block py-2 hover:text-orange-600 dark:hover:text-orange-400">
+                  Super Admin
                 </Link>
               )}
               <button 
@@ -313,6 +258,11 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
           {userData.role === 'admin' && (
             <Link to="/admin" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
               Admin Panel
+            </Link>
+          )}
+          {userData.role === 'super_admin' && (
+            <Link to="/super-admin" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+              Super Admin
             </Link>
           )}
           <button 

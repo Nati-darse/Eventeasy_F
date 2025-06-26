@@ -5,6 +5,7 @@ import axios from "axios";
 import bg_1 from "../assets/bg_1.jpg";
 import { AppContent } from "../context/AppContext.jsx";
 import { FaCalendarAlt, FaEye, FaEyeSlash } from "react-icons/fa";
+import GoogleAuth from "../components/GoogleAuth.jsx";
 
 export default function AttendeeLogin() {
   const { setIsLoggedin, getUserData } = useContext(AppContent);
@@ -91,6 +92,17 @@ export default function AttendeeLogin() {
         alert("Connection issue. Is the server running?");
       }
     }
+  };
+
+  const handleGoogleSuccess = async (data) => {
+    setIsLoggedin(true);
+    await getUserData();
+    alert("Google login successful! Welcome! 🎉");
+    navigate("/Attendee");
+  };
+
+  const handleGoogleError = (error) => {
+    alert("Google login failed: " + error);
   };
 
   useEffect(() => {
@@ -282,18 +294,14 @@ export default function AttendeeLogin() {
             <div className="flex-1 border-t border-gray-300 dark:border-gray-500"></div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-center w-full border border-gray-300 dark:border-gray-500 px-4 py-3 rounded-lg font-medium text-gray-700 dark:text-gray-300 mx-4"
-          >
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png"
-              alt="Google Logo"
-              className="w-5 h-5 mr-2"
+          <div className="px-4">
+            <GoogleAuth
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              role="attendee"
+              buttonText={`${state} with Google`}
             />
-            {state} with Google
-          </motion.button>
+          </div>
 
           <div className="mt-6 text-center text-sm">
             <span className="text-gray-600 dark:text-gray-400">
