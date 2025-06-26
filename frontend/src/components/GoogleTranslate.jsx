@@ -49,6 +49,22 @@ const GoogleTranslate = () => {
         .google-translate-container .goog-te-gadget {
           font-family: inherit !important;
           font-size: 0 !important;
+          /* Hide the Google logo and "Powered by" text */
+          background-image: none !important;
+        }
+        .google-translate-container .goog-te-gadget img {
+          display: none !important;
+        }
+        .google-translate-container .goog-te-gadget span.text-gtrans {
+          display: none !important;
+        }
+        
+        /* Further simplify the dropdown appearance */
+        .google-translate-container .goog-te-gadget-simple {
+          border: none !important; /* Remove border */
+          background-color: transparent !important; /* Ensure transparent background */
+          padding: 0 !important; /* Remove padding */
+          box-shadow: none !important; /* Remove shadow */
         }
         
         .google-translate-container .goog-te-gadget-simple {
@@ -76,6 +92,8 @@ const GoogleTranslate = () => {
         
         .google-translate-container .goog-te-gadget-simple .goog-te-menu-value {
           color: inherit !important;
+          font-weight: 600; /* Make selected language text bolder */
+          color: inherit !important; /* Inherit color from parent */
         }
         
         .google-translate-container .goog-te-gadget-simple .goog-te-menu-value span {
@@ -84,6 +102,10 @@ const GoogleTranslate = () => {
         
         .google-translate-container .goog-te-gadget-simple .goog-te-menu-value span:first-child {
           display: none;
+        }
+        .google-translate-container .goog-te-gadget-simple .goog-te-menu-value span:last-child {
+          /* This is usually the dropdown arrow or a small icon */
+          display: none !important; /* Hide the dropdown arrow */
         }
         
         .goog-te-banner-frame {
