@@ -7,6 +7,7 @@ import Login_att from './Pages/Login_att.jsx';
 import EmailVerify from './Pages/EmailVerify.jsx';
 import Attendee from './Pages/Attendee.jsx';
 import Organizer from './Pages/Organizer.jsx';
+import OrganizerAttendees from './Pages/OrganizerAttendees.jsx';
 import Admin from './Pages/Admin.jsx';
 import UserManagement from './Pages/userManagement.jsx';
 import EventManagement from './Pages/eventManagement.jsx';
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/email-verify" element={<EmailVerify />} />
         <Route path="/Attendee" element={<Attendee />} />
         <Route path="/Organizer_Dashboard" element={<Organizer />} />
+        <Route path="/Organizer_Dashboard/attendees" element={<OrganizerAttendees />} />
         <Route path="/admin" element={<Admin />}/>
         <Route path="/admin/user-management" element={<UserManagement/>}/>
         <Route path="/admin/event-management" element={<EventManagement />} />

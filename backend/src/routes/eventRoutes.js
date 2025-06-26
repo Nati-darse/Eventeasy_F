@@ -9,7 +9,9 @@ const {
   leaveEvent,
   updateEventStatus,
   updateEvent,
-  deleteEvent
+  deleteEvent,
+  getOrganizerEvents,
+  getEventAttendees
 } = require("../controllers/eventController");
 
 const upload = require("../middlewares/multer");
@@ -31,6 +33,12 @@ router.get("/events/:id", getEventById);
 router.post("/events/:id/attend", userAuth, attendEvent);
 
 router.get("/events/:id", userAuth, getEventById);
+
+// Get events created by the logged-in organizer
+router.get("/organizer-events", userAuth, getOrganizerEvents);
+
+// Get attendees for a specific event (organizer only)
+router.get("/events/:id/attendees", userAuth, getEventAttendees);
 
 router.put("/events/:id/status", userAuth, updateEventStatus);
 
