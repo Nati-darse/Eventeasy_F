@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
+
+// Import routes
 const router = require('./routes/routes');
 const userRouter = require('./routes/userRoutes');
 const eventRouter = require('./routes/eventRoutes');
@@ -12,21 +14,66 @@ const paymentRouter = require('./routes/paymentRoutes');
 const authRouter = require('./routes/authRoutes');
 const adminRouter = require('./routes/adminRoutes');
 
+// Import middleware
+const { generalLimiter } = require('./middleware/rateLimiter');
+const {
+  securityHeaders,
+  mongoSanitization,
+  xssProtection,
+  parameterPollution,
+  customSecurity,
+  validateInput,
+} = require('./middleware/security');
+
 const app = express();
 
-// Middleware
+// Security middleware
+app.use(securityHeaders);
+app.use(customSecurity);
+app.use(mongoSanitization);
+app.use(xssProtection);
+app.use(parameterPollution);
+app.use(validateInput);
+
+// Rate limiting
+app.use(generalLimiter);
+
+// CORS configuration
 app.use(cors({ 
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-app.use(express.json());
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Routes
-app.get('/', (req, res) => {
-  res.send('🚀 Event-Easy backend is running');
+// Health check endpoint
+app.get('/health', (req, res) => {
+  const dbHealth = connectDB.getHealthStatus();
+  res.status(200).json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    database: dbHealth,
+    environment: process.env.NODE_ENV || 'development',
+  });
 });
 
+// API routes
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: '🚀 Event-Easy backend is running',
+    version: '1.0.0',
+    documentation: '/api/docs',
+  });
+});
+
+// Mount routes
 app.use("/Event-Easy/users", router);
 app.use("/Event-Easy/user", userRouter);
 app.use("/Event-Easy/Event", eventRouter);
@@ -36,14 +83,80 @@ app.use('/Event-Easy/payment', paymentRouter);
 app.use('/Event-Easy/auth', authRouter);
 app.use('/Event-Easy/admin', adminRouter);
 
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+  });
+});
+
+// Global error handler
+app.use((error, req, res, next) => {
+  console.error('Global error handler:', error);
+  
+  // Mongoose validation error
+  if (error.name === 'ValidationError') {
+    const errors = Object.values(error.errors).map(err => err.message);
+    return res.status(400).json({
+      success: false,
+      message: 'Validation Error',
+      errors,
+    });
+  }
+
+  // Mongoose duplicate key error
+  if (error.code === 11000) {
+    const field = Object.keys(error.keyValue)[0];
+    return res.status(400).json({
+      success: false,
+      message: `${field} already exists`,
+    });
+  }
+
+  // JWT errors
+  if (error.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid token',
+    });
+  }
+
+  if (error.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Token expired',
+    });
+  }
+
+  // Default error
+  res.status(error.statusCode || 500).json({
+    success: false,
+    message: error.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
+  });
+});
+
 // Start server after DB connection
 const startServer = async () => {
   try {
-    await connectDB();
+    await connectDB.connect();
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
+    
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
     });
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down gracefully');
+      server.close(() => {
+        console.log('Process terminated');
+      });
+    });
+
   } catch (err) {
     console.error('❌ Failed to start server:', err);
     process.exit(1);

@@ -1,117 +1,109 @@
 import { motion } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import bg_1 from "../assets/bg_1.jpg";
 import { AppContent } from "../context/AppContext.jsx";
 import { FaCalendarAlt, FaEye, FaEyeSlash } from "react-icons/fa";
 import GoogleAuth from "../components/GoogleAuth.jsx";
+import { useFormValidation, ValidatedInput, validationRules } from "../components/FormValidation.jsx";
+import { useToast } from "../hooks/useToast.js";
+import LoadingSpinner from "../components/LoadingSpinner.jsx";
 
 export default function OrganizerLogin() {
-  const { setIsLoggedin, getUserData } = useContext(AppContent);
+  const { setIsLoggedin, getUserData, login, register, loading } = useContext(AppContent);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
   const [state, setState] = useState("Sign In");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { success, error } = useToast();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // Form validation
+  const validationSchema = {
+    name: state === 'Sign Up' ? validationRules.name : {},
+    email: validationRules.email,
+    password: validationRules.password,
+    confirmPassword: state === 'Sign Up' ? {
+      required: true,
+      validate: (value, values) => value === values.password ? [] : ['Passwords do not match']
+    } : {},
   };
 
- const handleSubmit = async (e) => {
+  const {
+    values,
+    errors,
+    handleChange,
+    handleBlur,
+    validateAll,
+    reset,
+  } = useFormValidation({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  }, validationSchema);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateAll()) {
+      error('Please fix the errors in the form');
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      axios.defaults.withCredentials = true;
-
       if (state === "Sign Up") {
-        if (formData.password !== formData.confirmPassword) {
-          alert("Passwords do not match!");
-          return;
-        }
-
-
-        // Step 2: Explicitly set the role to "organizer"
-        const role = "organizer"; // Explicitly defining the role
-
-        // Step 3: Send registration request for organizer
-        const { data } = await axios.post("http://localhost:5000/Event-Easy/users/register", {
-
- 
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: "organizer",
+        const result = await register({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          role: 'organizer',
         });
 
-        if (data.message === "User created successfully") {
-          alert("Signup successful!");
-          setIsLoggedin(true);
-
-          if (data.token) {
-            localStorage.setItem("token", data.token);
-            axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-          }
-
-          await getUserData();
-          await sendVerificationOtp(formData.email);
+        if (result.success) {
+          success("Signup successful! Welcome to Event Easy! 🎉");
           navigate("/email-verify");
         } else {
-          alert("Signup failed: " + data.message);
+          error(result.error || "Signup failed");
         }
-        return;
-      }
-
-      // Login logic
-      const response = await axios.post(
-
-        "http://localhost:5000/Event-Easy/users/login",
-        // "http://localhost:5000/Event-Easy/organizer/login",
-        formData,
-        { withCredentials: true }
-      );
-
-      if (response.data?.token) {
-        const token = response.data.token;
-        localStorage.setItem("token", token);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-        setIsLoggedin(true);
-        await getUserData();
-        alert("Login successful! Welcome back! 🎉");
-        navigate("/Organizer_Dashboard");
-      }
-
-    } catch (error) {
-      console.error("Auth error:", error);
-      if (error.response?.data) {
-        alert(`Error: ${error.response.data.message || "Unknown error"}`);
       } else {
-        alert("Connection issue. Is the server running?");
+        const result = await login({
+          email: values.email,
+          password: values.password,
+        });
+
+        if (result.success) {
+          success("Login successful! Welcome back! 🎉");
+          navigate("/Organizer_Dashboard");
+        } else {
+          error(result.error || "Login failed");
+        }
       }
+    } catch (err) {
+      console.error("Auth error:", err);
+      error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSuccess = async (data) => {
     setIsLoggedin(true);
     await getUserData();
-    alert("Google login successful! Welcome! 🎉");
+    success("Google login successful! Welcome! 🎉");
     navigate("/Organizer_Dashboard");
   };
 
-  const handleGoogleError = (error) => {
-    alert("Google login failed: " + error);
+  const handleGoogleError = (errorMessage) => {
+    error("Google login failed: " + errorMessage);
+  };
+
+  const handleStateChange = () => {
+    setState(state === "Sign In" ? "Sign Up" : "Sign In");
+    reset();
   };
 
   useEffect(() => {
@@ -155,30 +147,6 @@ export default function OrganizerLogin() {
     </>
   );
 
-  const sendVerificationOtp = async (email) => {
-    try {
-      axios.defaults.withCredentials = true;
-
-      const { data } = await axios.post(
-        'http://localhost:5000/Event-Easy/users/send-verify-otp',
-        { email },  // Send the email as part of the body
-        { withCredentials: true }
-      );
-
-      if (data.success) {
-        console.log("Verification email sent successfully:", data.message);
-        alert("An OTP has been sent to your email address. Please verify your email.");
-      } else {
-        console.error("Failed to send verification email:", data.message);
-        alert("Failed to send verification OTP. Please try again.");
-      }
-
-    } catch (error) {
-      console.error("Error sending verification email:", error);
-      alert("There was an error sending the OTP. Please try again.");
-    }
-  };
-
   return (
     <motion.div
       className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4 py-8"
@@ -188,7 +156,7 @@ export default function OrganizerLogin() {
     >
       <CustomCursor />
       
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden w-full max-w-5xl  flex flex-col md:flex-row">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
         {/* Left Side - Form */}
         <div className="flex-1 p-6 flex flex-col justify-center">
           <div className="flex items-center mb-6">
@@ -209,39 +177,42 @@ export default function OrganizerLogin() {
 
           <form onSubmit={handleSubmit} className="space-y-4 px-4">
             {state === "Sign Up" && (
-              <div className="relative">
-                <input
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Full Name"
-                  type="text"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white"
-                  required
-                />
-              </div>
-            )}
-
-            <div className="relative">
-              <input
-                name="email"
-                value={formData.email}
+              <ValidatedInput
+                name="name"
+                value={values.name}
                 onChange={handleChange}
-                placeholder="Email Address"
-                type="email"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white"
+                onBlur={handleBlur}
+                placeholder="Full Name"
+                type="text"
+                rules={validationRules.name}
+                errors={errors.name}
                 required
               />
-            </div>
+            )}
+
+            <ValidatedInput
+              name="email"
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="Email Address"
+              type="email"
+              rules={validationRules.email}
+              errors={errors.email}
+              required
+            />
 
             <div className="relative">
-              <input
+              <ValidatedInput
                 name="password"
-                value={formData.password}
+                value={values.password}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Password"
                 type={showPassword ? "text" : "password"}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white pr-10"
+                rules={validationRules.password}
+                errors={errors.password}
+                className="pr-10"
                 required
               />
               <button
@@ -255,13 +226,15 @@ export default function OrganizerLogin() {
 
             {state === "Sign Up" && (
               <div className="relative">
-                <input
+                <ValidatedInput
                   name="confirmPassword"
-                  value={formData.confirmPassword}
+                  value={values.confirmPassword}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Confirm Password"
                   type={showConfirmPassword ? "text" : "password"}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white pr-10"
+                  errors={errors.confirmPassword}
+                  className="pr-10"
                   required
                 />
                 <button
@@ -276,11 +249,16 @@ export default function OrganizerLogin() {
 
             <motion.button
               type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition-all"
+              disabled={isSubmitting || loading}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              {state}
+              {isSubmitting || loading ? (
+                <LoadingSpinner size="small" />
+              ) : (
+                state
+              )}
             </motion.button>
 
             {state === "Sign In" && (
@@ -316,7 +294,7 @@ export default function OrganizerLogin() {
               {state === "Sign Up" ? "Already have an account?" : "New to Event Easy?"}{" "}
             </span>
             <motion.button
-              onClick={() => setState(state === "Sign In" ? "Sign Up" : "Sign In")}
+              onClick={handleStateChange}
               className="text-orange-500 font-medium hover:underline"
               whileHover={{ color: "#ea580c" }}
             >

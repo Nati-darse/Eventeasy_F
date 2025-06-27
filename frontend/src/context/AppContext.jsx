@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from 'react';
 import axios from 'axios';
+import { useToast } from '../hooks/useToast';
 
 export const AppContent = createContext();
 
@@ -8,6 +9,70 @@ export const AppContextProvider = (props) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { error: showError } = useToast();
+
+  // Enhanced error handling
+  const handleError = (error, context = '') => {
+    console.error(`${context} error:`, error);
+    
+    let errorMessage = 'An unexpected error occurred';
+    
+    if (error.response) {
+      // Server responded with error status
+      errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
+    } else if (error.request) {
+      // Request made but no response
+      errorMessage = 'Network error: Unable to connect to server';
+    } else {
+      // Something else happened
+      errorMessage = error.message || errorMessage;
+    }
+    
+    setError(errorMessage);
+    showError(errorMessage);
+    return errorMessage;
+  };
+
+  // Setup axios interceptors for better error handling
+  useEffect(() => {
+    // Request interceptor
+    const requestInterceptor = axios.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Response interceptor
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // Token expired or invalid
+          localStorage.removeItem('token');
+          setIsLoggedin(false);
+          setUserData(null);
+          
+          // Only redirect if not already on login page
+          if (!window.location.pathname.includes('Login')) {
+            window.location.href = '/Login_Attendee';
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, [showError]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -21,6 +86,7 @@ export const AppContextProvider = (props) => {
   
   const getUserData = async () => {
     try {
+      setError(null);
       const { data } = await axios.get('http://localhost:5000/Event-Easy/user/data', { 
         withCredentials: true,
         headers: {
@@ -32,19 +98,17 @@ export const AppContextProvider = (props) => {
         setUserData(data);
         return data;
       } else {
-        console.error('Failed to fetch user data: No user data found.');
-        return null;
+        throw new Error('Invalid user data received');
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      setError('Failed to fetch user data');
+      handleError(error, 'Get user data');
       return null;
     }
   };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && isLoggedin) {
       getUserData();
     } else {
       setUserData(null);
@@ -53,6 +117,7 @@ export const AppContextProvider = (props) => {
   
   const getAuthState = async () => {
     try {
+      setError(null);
       const { data } = await axios.get('http://localhost:5000/Event-Easy/users/is-auth', { 
         withCredentials: true,
         headers: {
@@ -63,12 +128,96 @@ export const AppContextProvider = (props) => {
       if (data.success) {
         setUserData(data.userData);
         setIsLoggedin(true);
+      } else {
+        throw new Error('Authentication failed');
       }
     } catch (error) {
-      console.error('Error fetching auth state:', error);
+      handleError(error, 'Get auth state');
       // Clear token if authentication fails
       localStorage.removeItem('token');
-      setError('Authentication failed');
+      delete axios.defaults.headers.common["Authorization"];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Enhanced logout function
+  const logout = async () => {
+    try {
+      await axios.post('http://localhost:5000/Event-Easy/users/logout', {}, { 
+        withCredentials: true 
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local state regardless of server response
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common["Authorization"];
+      setIsLoggedin(false);
+      setUserData(null);
+      setError(null);
+    }
+  };
+
+  // Enhanced login function
+  const login = async (credentials) => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const response = await axios.post(
+        'http://localhost:5000/Event-Easy/users/login',
+        credentials,
+        { withCredentials: true }
+      );
+
+      if (response.data?.token) {
+        const token = response.data.token;
+        localStorage.setItem('token', token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        setIsLoggedin(true);
+        await getUserData();
+        
+        return { success: true, data: response.data };
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error) {
+      const errorMessage = handleError(error, 'Login');
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Enhanced register function
+  const register = async (userData) => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const response = await axios.post(
+        'http://localhost:5000/Event-Easy/users/register',
+        userData,
+        { withCredentials: true }
+      );
+
+      if (response.data?.token) {
+        const token = response.data.token;
+        localStorage.setItem('token', token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        setIsLoggedin(true);
+        await getUserData();
+        
+        return { success: true, data: response.data };
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error) {
+      const errorMessage = handleError(error, 'Register');
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -82,7 +231,11 @@ export const AppContextProvider = (props) => {
     getUserData,
     loading,
     error,
-    setError
+    setError,
+    handleError,
+    logout,
+    login,
+    register,
   };
 
   return (
