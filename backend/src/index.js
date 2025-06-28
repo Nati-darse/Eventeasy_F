@@ -161,7 +161,7 @@ const startServer = async () => {
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+      console.log(`🌐 Frontend URLs: http://localhost:5173, https://event-easy-n4tha.vercel.app`);
     });
 
     // Graceful shutdown
