@@ -514,7 +514,7 @@ const AttendeePage = () => {
           );
         })}
         
-        {!showMap && filteredEvents.length === 0 && (
+        {filteredEvents.length === 0 && (
           <div className="text-center py-10">
             <p className="text-xl text-gray-600 dark:text-gray-400">No events found for the selected filters. Try adjusting your criteria! ✨</p>
           </div>
