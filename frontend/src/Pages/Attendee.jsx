@@ -32,6 +32,7 @@ const AttendeePage = () => {
   // State for events and filtering
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [showMap, setShowMap] = useState(false);
 
   // State for reviews
   const [ratings, setRatings] = useState({});
@@ -341,17 +342,6 @@ const AttendeePage = () => {
                 <div className="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
                   👥 {event.attendees?.length || 0}/{event.capacity || 100} spots
                 </div>
-
-                {/* Event Status */}
-                <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                  event.status === 'approved' ? 'bg-green-100 text-green-800' :
-                  event.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {event.status === 'approved' ? '✅ Approved' :
-                   event.status === 'pending' ? '⏳ Pending' :
-                   '❌ Rejected'}
-                </div>
               </div>
 
               {/* Event Location Map (small preview) */}
@@ -514,7 +504,7 @@ const AttendeePage = () => {
           );
         })}
         
-        {!showMap && filteredEvents.length === 0 && (
+        {filteredEvents.length === 0 && (
           <div className="text-center py-10">
             <p className="text-xl text-gray-600 dark:text-gray-400">No events found for the selected filters. Try adjusting your criteria! ✨</p>
           </div>

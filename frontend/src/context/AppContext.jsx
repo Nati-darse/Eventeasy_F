@@ -9,7 +9,7 @@ export const AppContextProvider = (props) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { error: showError } = useToast();
+  const { error: showError, success: showSuccess, warning: showWarning, info: showInfo } = useToast();
 
   // Enhanced error handling
   const handleError = (error, context = '') => {
@@ -19,10 +19,33 @@ export const AppContextProvider = (props) => {
     
     if (error.response) {
       // Server responded with error status
-      errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
+      const serverMessage = error.response.data?.message;
+      
+      // Map common error messages to user-friendly versions
+      if (serverMessage) {
+        if (serverMessage.includes('User already exists')) {
+          errorMessage = 'An account with this email already exists. Please try logging in instead.';
+        } else if (serverMessage.includes('Invalid email or password') || serverMessage.includes('Invalid credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (serverMessage.includes('User not found')) {
+          errorMessage = 'No account found with this email. Please check your email or create a new account.';
+        } else if (serverMessage.includes('Email and password are required')) {
+          errorMessage = 'Please enter both email and password.';
+        } else if (serverMessage.includes('Google OAuth user')) {
+          errorMessage = 'This account was created with Google. Please use Google Sign-In instead.';
+        } else if (serverMessage.includes('Validation Error')) {
+          errorMessage = 'Please check your input and try again.';
+        } else if (serverMessage.includes('already exists')) {
+          errorMessage = 'This information is already in use. Please try different details.';
+        } else {
+          errorMessage = serverMessage;
+        }
+      } else {
+        errorMessage = `Server error (${error.response.status}). Please try again later.`;
+      }
     } else if (error.request) {
       // Request made but no response
-      errorMessage = 'Network error: Unable to connect to server';
+      errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
     } else {
       // Something else happened
       errorMessage = error.message || errorMessage;
@@ -244,6 +267,11 @@ export const AppContextProvider = (props) => {
     logout,
     login,
     register,
+    // Toast functions
+    showError,
+    showSuccess,
+    showWarning,
+    showInfo,
   };
 
   return (
