@@ -8,7 +8,7 @@ const {
   getEventReportById,
   updateEventReport,
   deleteEventReport,
-} = require('../controllers/reportConroller');
+} = require('../controllers/reportController');
 
 // Import authentication and authorization middleware
 const userAuth = require('../middlewares/userAuth');
@@ -19,5 +19,10 @@ const userAuth = require('../middlewares/userAuth');
 // @desc    Create a new event report
 // @access  Private (User must be logged in)
 router.post('/:eventId', userAuth, createEventReport);
+
+// @route   DELETE /api/reports/:reportId
+// @desc    Delete an event report
+// @access  Private (Admin only)
+router.delete('/:reportId', userAuth, deleteEventReport);
 
 module.exports = router;

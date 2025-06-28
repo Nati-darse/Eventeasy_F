@@ -1,10 +1,13 @@
 const express = require('express');
-const { getUserDetails } = require('../controllers/userDetails');
+const { getUserById, getCurrentUser } = require('../controllers/userController');
 const userAuth = require('../middlewares/userAuth');
 
 const userRouter = express.Router();
 
-// Route to get all users
-userRouter.get('/data', userAuth, getUserDetails);
+// Route to get current user details
+userRouter.get('/data', userAuth, getCurrentUser);
+
+// Route to get user details by ID
+userRouter.get('/data/:id', userAuth, getUserById);
 
 module.exports = userRouter;

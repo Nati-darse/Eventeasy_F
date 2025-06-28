@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { formatDistanceToNow } from "date-fns";
 import { Link } from 'react-router-dom';
-import GoogleMapComponent from '../components/GoogleMapComponent.jsx';
-import EventFilter from '../components/EventFilter.jsx';
+import LeafletMapComponent from '../Components/LeafletMapComponent.jsx';
+import SimpleEventFilter from '../Components/SimpleEventFilter.jsx';
 
 // Define categories for filtering
 const categories = [
@@ -32,8 +32,6 @@ const AttendeePage = () => {
   // State for events and filtering
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const [showMap, setShowMap] = useState(false);
-  const [mapLocations, setMapLocations] = useState([]);
 
   // State for reviews
   const [ratings, setRatings] = useState({});
@@ -52,9 +50,25 @@ const AttendeePage = () => {
   const applyFilters = (filters) => {
     let filtered = [...events];
 
+    // Apply search query filter
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      filtered = filtered.filter(event => 
+        event.eventName?.toLowerCase().includes(query) ||
+        event.description?.toLowerCase().includes(query) ||
+        event.organizer?.name?.toLowerCase().includes(query) ||
+        event.category?.toLowerCase().includes(query) ||
+        event.pattern?.toLowerCase().includes(query)
+      );
+    }
+
     // Apply category filter
     if (filters.category !== 'All') {
+      console.log('🔍 Filtering by category:', filters.category);
+      console.log('📊 Total events before category filter:', filtered.length);
       filtered = filtered.filter(event => event.category === filters.category);
+      console.log('📊 Events after category filter:', filtered.length);
+      console.log('📋 Available categories in filtered events:', [...new Set(filtered.map(e => e.category))]);
     }
 
     // Apply date filter
@@ -68,6 +82,17 @@ const AttendeePage = () => {
       filtered = filtered.filter(event => {
         const eventDate = new Date(event.time);
         return eventDate >= today && eventDate < tomorrow;
+      });
+    } else if (filters.dateRange === 'tomorrow') {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const dayAfterTomorrow = new Date(tomorrow);
+      dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+      
+      filtered = filtered.filter(event => {
+        const eventDate = new Date(event.time);
+        return eventDate >= tomorrow && eventDate < dayAfterTomorrow;
       });
     } else if (filters.dateRange === 'week') {
       const weekLater = new Date();
@@ -85,52 +110,21 @@ const AttendeePage = () => {
         const eventDate = new Date(event.time);
         return eventDate >= now && eventDate <= monthLater;
       });
-    }
-
-    // Apply location filter
-    if (filters.location) {
-      filtered = filtered.filter(event => 
-        event.location?.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
-        event.eventName.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
-    // Apply price filter
-    if (filters.priceRange !== 'all') {
-      if (filters.priceRange === 'free') {
-        filtered = filtered.filter(event => !event.price?.amount || event.price.amount === 0);
-      } else if (filters.priceRange === '0-50') {
-        filtered = filtered.filter(event => event.price?.amount >= 0 && event.price?.amount <= 50);
-      } else if (filters.priceRange === '50-100') {
-        filtered = filtered.filter(event => event.price?.amount > 50 && event.price?.amount <= 100);
-      } else if (filters.priceRange === '100-500') {
-        filtered = filtered.filter(event => event.price?.amount > 100 && event.price?.amount <= 500);
-      } else if (filters.priceRange === '500+') {
-        filtered = filtered.filter(event => event.price?.amount > 500);
+    } else if (filters.dateRange === 'custom') {
+      if (filters.customDateFrom && filters.customDateTo) {
+        const fromDate = new Date(filters.customDateFrom);
+        const toDate = new Date(filters.customDateTo);
+        toDate.setHours(23, 59, 59, 999); // End of day
+        
+        filtered = filtered.filter(event => {
+          const eventDate = new Date(event.time);
+          return eventDate >= fromDate && eventDate <= toDate;
+        });
       }
     }
 
-    // Apply sorting
-    filtered.sort((a, b) => {
-      if (filters.sortBy === 'date') {
-        return filters.sortOrder === 'asc' 
-          ? new Date(a.time) - new Date(b.time)
-          : new Date(b.time) - new Date(a.time);
-      } else if (filters.sortBy === 'name') {
-        return filters.sortOrder === 'asc'
-          ? a.eventName.localeCompare(b.eventName)
-          : b.eventName.localeCompare(a.eventName);
-      } else if (filters.sortBy === 'price') {
-        const priceA = a.price?.amount || 0;
-        const priceB = b.price?.amount || 0;
-        return filters.sortOrder === 'asc' ? priceA - priceB : priceB - priceA;
-      } else if (filters.sortBy === 'popularity') {
-        return filters.sortOrder === 'asc'
-          ? a.attendees.length - b.attendees.length
-          : b.attendees.length - a.attendees.length;
-      }
-      return 0;
-    });
+    // Sort by date (newest first)
+    filtered.sort((a, b) => new Date(b.time) - new Date(a.time));
 
     setFilteredEvents(filtered);
   };
@@ -250,23 +244,6 @@ const AttendeePage = () => {
     }
   };
 
-  // --- Map Functions ---
-  const toggleMapView = () => {
-    setShowMap(!showMap);
-    
-    if (!showMap && events.length > 0) {
-      // Prepare locations for map
-      const locations = events
-        .filter(event => event.location?.coordinates?.length === 2)
-        .map(event => ({
-          coordinates: event.location.coordinates,
-          title: event.eventName
-        }));
-      
-      setMapLocations(locations);
-    }
-  };
-
   // --- Effects and Event Fetching ---
   useEffect(() => {
     fetch('http://localhost:5000/Event-Easy/Event/events')
@@ -274,18 +251,13 @@ const AttendeePage = () => {
       .then((data) => {
         const allEvents = Array.isArray(data) ? data : (data.events || []);
         const approvedEvents = allEvents.filter((event) => event.status === 'approved');
+        
+        // Debug: Log available categories
+        const availableCategories = [...new Set(approvedEvents.map(e => e.category))];
+        console.log('🏷️ Available categories in database:', availableCategories);
+        
         setEvents(approvedEvents);
         setFilteredEvents(approvedEvents);
-        
-        // Prepare map locations
-        const locations = approvedEvents
-          .filter(event => event.location?.coordinates?.length === 2)
-          .map(event => ({
-            coordinates: event.location.coordinates,
-            title: event.eventName
-          }));
-        
-        setMapLocations(locations);
         
         // Fetch reviews for each event
         approvedEvents.forEach((event) => fetchReviews(event._id));
@@ -296,43 +268,35 @@ const AttendeePage = () => {
   return (
     <div className="bg-gradient-to-br from-gray-100 via-white to-indigo-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 sm:px-6 flex justify-center items-start">
       <div className="max-w-5xl w-full space-y-8">
-        {/* Filter and Map Toggle */}
+        {/* Filter Section */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+          <div className="mb-4">
             <h3 className="text-xl sm:text-2xl font-extrabold text-indigo-700 dark:text-indigo-300">🎯 Discover Events</h3>
-            <button
-              onClick={toggleMapView}
-              className="mt-2 sm:mt-0 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center"
-            >
-              {showMap ? 'Show List View' : 'Show Map View'}
-            </button>
           </div>
           
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            <EventFilter onFilterChange={applyFilters} />
-          </div>
+          <SimpleEventFilter onFilterChange={applyFilters} />
         </div>
 
         {/* Map View */}
-        {showMap && (
+        {/* {showMap && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Event Locations</h3>
             <div className="h-[600px]">
-              <GoogleMapComponent
-                apiKey="YOUR_GOOGLE_MAPS_API_KEY" // Replace with your API key
+              <LeafletMapComponent
                 initialLocation={{ lat: 9.0222, lng: 38.7468 }} // Default to Addis Ababa
                 readOnly={true}
                 markerLocations={mapLocations}
+                height="600px"
               />
             </div>
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
               Showing {mapLocations.length} events on the map. Click on markers to see event details.
             </p>
           </div>
-        )}
+        )} */}
 
         {/* Event Cards */}
-        {!showMap && filteredEvents.map((event) => {
+        {filteredEvents.map((event) => {
           const organizerName = event.organizer?.name || 'Unknown Organizer';
           const organizerImage = event.organizer?.profilePicture?.url || event.organizerImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(organizerName)}&background=random&color=fff`;
           const eventReviews = reviews[event._id] || [];
@@ -352,26 +316,54 @@ const AttendeePage = () => {
               </div>
 
               {/* Event Content */}
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{event.eventName || event.title || 'Event Title Missing'}</h2>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">{event.description || 'No description available.'}</p>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{event.eventName || event.title || 'Event Title Missing'}</h2>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">{event.description || 'No description available.'}</p>
+              </div>
 
-              {/* Event Price */}
-              {event.price?.amount > 0 && (
-                <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                  {event.price.amount} {event.price.currency || 'ETB'}
+              {/* Event Details Row */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Event Price */}
+                {event.price?.amount > 0 && (
+                  <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                    {event.price.amount} {event.price.currency || 'ETB'}
+                  </div>
+                )}
+
+                {/* Free Event Badge */}
+                {(!event.price?.amount || event.price.amount === 0) && (
+                  <div className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                    🆓 Free Event
+                  </div>
+                )}
+
+                {/* Capacity Info */}
+                <div className="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                  👥 {event.attendees?.length || 0}/{event.capacity || 100} spots
                 </div>
-              )}
+
+                {/* Event Status */}
+                <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                  event.status === 'approved' ? 'bg-green-100 text-green-800' :
+                  event.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  {event.status === 'approved' ? '✅ Approved' :
+                   event.status === 'pending' ? '⏳ Pending' :
+                   '❌ Rejected'}
+                </div>
+              </div>
 
               {/* Event Location Map (small preview) */}
               {event.location?.coordinates?.length === 2 && (
                 <div className="h-40 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
-                  <GoogleMapComponent
-                    apiKey="YOUR_GOOGLE_MAPS_API_KEY" // Replace with your API key
+                  <LeafletMapComponent
                     initialLocation={{
                       lng: event.location.coordinates[0],
                       lat: event.location.coordinates[1]
                     }}
                     readOnly={true}
+                    height="160px"
                   />
                 </div>
               )}

@@ -28,11 +28,9 @@ router.post(
 
 router.get("/events", getAllEvents);
 
-router.get("/events/:id", getEventById);
+router.get("/events/:id", userAuth, getEventById);
 
 router.post("/events/:id/attend", userAuth, attendEvent);
-
-router.get("/events/:id", userAuth, getEventById);
 
 // Get events created by the logged-in organizer
 router.get("/organizer-events", userAuth, getOrganizerEvents);

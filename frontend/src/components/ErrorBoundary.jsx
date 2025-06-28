@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaExclamationTriangle, FaRefresh } from 'react-icons/fa';
+import { FaExclamationTriangle ,FaSync } from 'react-icons/fa';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -73,7 +73,7 @@ class ErrorBoundary extends React.Component {
                 onClick={this.handleReload}
                 className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
               >
-                <FaRefresh />
+                <FaSync />
                 Reload Page
               </button>
             </div>

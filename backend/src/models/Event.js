@@ -89,11 +89,19 @@ const eventSchema = new mongoose.Schema({
       required: [true, 'Event location is required'],
       validate: {
         validator: function(coords) {
-          return coords.length === 2 && 
-                 coords[0] >= -180 && coords[0] <= 180 && // longitude
-                 coords[1] >= -90 && coords[1] <= 90;     // latitude
+          // Check if coordinates exist and are valid
+          if (!coords || !Array.isArray(coords) || coords.length !== 2) {
+            return false;
+          }
+          
+          const [longitude, latitude] = coords;
+          
+          // Check if coordinates are numbers and within valid ranges
+          return !isNaN(longitude) && !isNaN(latitude) &&
+                 longitude >= -180 && longitude <= 180 && // longitude range
+                 latitude >= -90 && latitude <= 90;       // latitude range
         },
-        message: 'Invalid coordinates format',
+        message: 'Coordinates must be [longitude, latitude] with valid ranges (longitude: -180 to 180, latitude: -90 to 90)',
       },
     },
     address: {
@@ -139,6 +147,10 @@ const eventSchema = new mongoose.Schema({
     },
     currency: {
       type: String,
+      enum: {
+        values: ['ETB', 'USD', 'EUR', 'GBP'],
+        message: 'Currency must be ETB, USD, EUR, or GBP',
+      },
       default: 'ETB',
     },
   },

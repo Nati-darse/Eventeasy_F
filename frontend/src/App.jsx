@@ -16,6 +16,7 @@ import EventDetail from './Pages/eventDetail.jsx';
 import AttendeeEventPage from './Pages/attendEvent.jsx';
 import PaymentPage from './Pages/PaymentPage.jsx';
 import SearchResults from './Pages/SearchResults.jsx';
+import MapComparison from './Pages/MapComparison.jsx';
 
 export default function App() {
   // Check for dark mode preference
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/payment/:eventId" element={<PaymentPage />} />
         <Route path="/payment/status" element={<PaymentPage />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/map-comparison" element={<MapComparison />} />
       </Routes>
     </div>
   );

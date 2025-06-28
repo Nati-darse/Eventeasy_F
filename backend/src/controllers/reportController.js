@@ -365,12 +365,53 @@ class ReportController {
       });
     }
   }
+
+  /**
+   * Delete report
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   */
+  static async deleteReport(req, res) {
+    try {
+      if (!req.user.hasPermission('canManageReports')) {
+        return res.status(403).json({
+          success: false,
+          message: 'Insufficient permissions to delete reports',
+        });
+      }
+
+      const { reportId } = req.params;
+
+      const report = await Report.findById(reportId);
+      if (!report) {
+        return res.status(404).json({
+          success: false,
+          message: 'Report not found',
+        });
+      }
+
+      await Report.findByIdAndDelete(reportId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Report deleted successfully',
+      });
+    } catch (error) {
+      console.error('Delete report error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete report',
+        error: error.message,
+      });
+    }
+  }
 }
 
 module.exports = {
   createEventReport: ReportController.createEventReport,
   createUserReport: ReportController.createUserReport,
-  getAllReports: ReportController.getAllReports,
-  updateReportStatus: ReportController.updateReportStatus,
-  getReportById: ReportController.getReportById,
+  getAllEventReports: ReportController.getAllReports,
+  getEventReportById: ReportController.getReportById,
+  updateEventReport: ReportController.updateReportStatus,
+  deleteEventReport: ReportController.deleteReport,
 };

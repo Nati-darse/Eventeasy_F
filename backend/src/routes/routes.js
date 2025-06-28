@@ -1,6 +1,7 @@
 const express = require("express");
 const { registerUser, loginUser, logoutUser, sendVerifyOtp, verifyOtp, isAuthenticated, getAllUsers, getUserById } = require("../controllers/userController");
 const userAuth = require("../middlewares/userAuth");
+const { googleAuth, linkGoogleAccount } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -13,5 +14,7 @@ router.post("/verify-otp", userAuth, verifyOtp); // Assuming you want to use the
 router.get("/is-auth", userAuth, isAuthenticated);
 router.get("/users", userAuth, getAllUsers); // Assuming you want to get all users
 router.get("/user/:id", userAuth, getUserById); // Assuming you want to get a user by ID
+router.post("/google-auth", googleAuth);
+router.post("/link-google-account", userAuth, linkGoogleAccount);
 
 module.exports = router;

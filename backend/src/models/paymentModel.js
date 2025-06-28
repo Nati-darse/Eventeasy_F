@@ -45,7 +45,6 @@ const paymentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Indexes for better query performance
-paymentSchema.index({ txRef: 1 });
 paymentSchema.index({ userId: 1 });
 paymentSchema.index({ eventId: 1 });
 paymentSchema.index({ status: 1 });

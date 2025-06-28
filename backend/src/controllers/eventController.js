@@ -1,37 +1,135 @@
-const Event = require("../models/eventModel");
+const Event = require("../models/Event");
 const mongoose = require("mongoose");
 const cloudinary = require("../utils/cloudinary");
 
 // Create new event
 const createEvent = async (req, res) => { 
   const userId = req.user?.id;
-  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+  console.log('🔐 User ID from token:', userId);
+  
+  if (!userId) {
+    console.log('❌ No user ID found in request');
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
   try {
-    const {
+    // Extract values from arrays if they come as arrays (form data issue)
+    const extractValue = (value) => {
+      if (Array.isArray(value)) {
+        return value[0];
+      }
+      return value;
+    };
+
+    const eventName = extractValue(req.body.eventName);
+    const time = extractValue(req.body.time);
+    const category = extractValue(req.body.category);
+    const pattern = extractValue(req.body.pattern);
+    const description = extractValue(req.body.description);
+    const updates = extractValue(req.body.updates);
+    const priceAmount = extractValue(req.body.priceAmount);
+    const priceCurrency = extractValue(req.body.priceCurrency);
+    const capacity = extractValue(req.body.capacity);
+    const organizer = extractValue(req.body.organizer);
+    const latitude = extractValue(req.body.latitude);
+    const longitude = extractValue(req.body.longitude);
+
+    const imageFile = req.files?.imageUrl?.[0];
+    const videoFile = req.files?.videoUrl?.[0];
+
+    console.log("📋 Request body:", req.body);
+    console.log("📁 Files received:", req.files);
+    console.log("📍 Coordinates:", { longitude, latitude });
+    console.log("💰 Pricing:", { priceAmount, priceCurrency, capacity });
+
+    console.log('📝 Received event data:', {
       eventName,
       time,
       category,
       pattern,
       description,
       updates,
+      priceAmount,
+      priceCurrency,
+      capacity,
       organizer,
-      longitude, // 👈 from frontend
-      latitude,  // 👈 from frontend
-    } = req.body;
+      latitude,
+      longitude
+    });
 
-    const imageFile = req.files?.imageUrl?.[0];
-    const videoFile = req.files?.videoUrl?.[0];
+    console.log('🔧 Raw form data (for debugging):', {
+      eventName: req.body.eventName,
+      priceCurrency: req.body.priceCurrency,
+      capacity: req.body.capacity
+    });
 
-    console.log("BODY:", req.body);
-    console.log("FILES:", req.files);
+    // Validate required fields
+    if (!eventName) {
+      return res.status(400).json({ message: 'Event name is required' });
+    }
+    
+    if (!time) {
+      return res.status(400).json({ message: 'Event time is required' });
+    }
+    
+    if (!category) {
+      return res.status(400).json({ message: 'Event category is required' });
+    }
+    
+    if (!pattern) {
+      return res.status(400).json({ message: 'Event pattern is required' });
+    }
 
-    if (!imageFile) return res.status(400).json({ message: 'Image is required' });
+    if (!imageFile) {
+      return res.status(400).json({ message: 'Image is required' });
+    }
 
     // Validate coordinates
     if (!longitude || !latitude) {
-      return res.status(400).json({ message: "Location (longitude & latitude) is required" });
+      return res.status(400).json({ message: "Location coordinates (longitude & latitude) are required" });
     }
+
+    const lng = parseFloat(longitude);
+    const lat = parseFloat(latitude);
+    
+    if (isNaN(lng) || isNaN(lat)) {
+      return res.status(400).json({ message: "Invalid coordinates format" });
+    }
+
+    // Validate price and capacity
+    const price = parseFloat(priceAmount) || 0;
+    const eventCapacity = parseInt(capacity) || 100;
+    
+    if (price < 0) {
+      return res.status(400).json({ message: "Price cannot be negative" });
+    }
+    
+    if (eventCapacity < 1) {
+      return res.status(400).json({ message: "Capacity must be at least 1" });
+    }
+
+    // Validate currency
+    const validCurrencies = ['ETB', 'USD', 'EUR', 'GBP'];
+    const currency = priceCurrency || 'ETB';
+    
+    console.log('💰 Currency validation:', {
+      receivedCurrency: priceCurrency,
+      trimmedCurrency: currency,
+      currencyType: typeof currency,
+      currencyLength: currency ? currency.length : 0,
+      isValid: validCurrencies.includes(currency)
+    });
+    
+    if (!validCurrencies.includes(currency)) {
+      return res.status(400).json({ 
+        message: `Invalid currency. Must be one of: ${validCurrencies.join(', ')}`,
+        receivedCurrency: priceCurrency,
+        currencyType: typeof priceCurrency
+      });
+    }
+
+    console.log('✅ All validations passed, creating event...');
+    console.log('💰 Price data:', { price, currency, eventCapacity });
 
     const imageData = {
       public_id: imageFile.filename,
@@ -57,15 +155,21 @@ const createEvent = async (req, res) => {
       attendees: [],
       organizer: userId,
       status: 'pending',
+      capacity: eventCapacity,
+      price: {
+        amount: price,
+        currency: currency,
+      },
       location: {
         type: 'Point',
-        coordinates: [parseFloat(longitude), parseFloat(latitude)], // 👈 Map-ready!
+        coordinates: [lng, lat],
       },
     });
 
+    console.log('✅ Event created successfully:', event._id);
     res.status(201).json({ message: 'Event created successfully', event });
   } catch (err) {
-    console.error('Error creating event:', err);
+    console.error('❌ Error creating event:', err);
     res.status(500).json({ message: 'Failed to create event', error: err.message });
   }
 };

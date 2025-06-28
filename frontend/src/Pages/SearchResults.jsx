@@ -4,7 +4,7 @@ import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaFilter, FaListUl, FaMapMarked } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import GoogleMapComponent from '../components/GoogleMapComponent.jsx';
+import LeafletMapComponent from '../Components/LeafletMapComponent.jsx';
 import Navbar from '../Components/navBar.jsx';
 
 const SearchResults = () => {
@@ -284,11 +284,11 @@ const SearchResults = () => {
         {!loading && !error && showMap && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
             <div className="h-[500px]">
-              <GoogleMapComponent
-                apiKey="YOUR_GOOGLE_MAPS_API_KEY" // Replace with your API key
+              <LeafletMapComponent
                 initialLocation={{ lat: 9.0222, lng: 38.7468 }} // Default to Addis Ababa
                 readOnly={true}
                 markerLocations={mapLocations}
+                height="500px"
               />
             </div>
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">

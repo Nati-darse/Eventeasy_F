@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import GoogleMapComponent from '../components/GoogleMapComponent.jsx';
+import LeafletMapComponent from '../Components/LeafletMapComponent.jsx';
 import { motion } from 'framer-motion';
 
 const AttendeeEventPage = () => {
@@ -138,6 +138,10 @@ const AttendeeEventPage = () => {
                     <span className="font-medium text-gray-700 dark:text-gray-300 mr-2">Attendees:</span>
                     <span className="text-gray-600 dark:text-gray-400">{event.attendees?.length || 0} registered</span>
                   </li>
+                  <li className="flex items-start">
+                    <span className="font-medium text-gray-700 dark:text-gray-300 mr-2">Capacity:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{event.attendees?.length || 0}/{event.capacity || 100} spots</span>
+                  </li>
                 </ul>
               </div>
               
@@ -161,10 +165,10 @@ const AttendeeEventPage = () => {
           {eventLocation && (
             <div className="mt-6">
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Event Location</h3>
-              <GoogleMapComponent
-                apiKey="YOUR_GOOGLE_MAPS_API_KEY" // Replace with your API key
+              <LeafletMapComponent
                 initialLocation={eventLocation}
                 readOnly={true}
+                height="400px"
               />
             </div>
           )}

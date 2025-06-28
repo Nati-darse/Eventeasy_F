@@ -78,8 +78,15 @@ class DatabaseConfig {
       await mongoose.connection.db.collection('users').createIndex({ role: 1 });
       await mongoose.connection.db.collection('users').createIndex({ isVerified: 1 });
 
-      // Event indexes
-      await mongoose.connection.db.collection('events').createIndex({ location: '2dsphere' });
+      // Event indexes - handle geospatial index carefully
+      try {
+        await mongoose.connection.db.collection('events').createIndex({ location: '2dsphere' });
+      } catch (geoError) {
+        console.warn('⚠️ Geospatial index creation failed, skipping:', geoError.message);
+        // Create a regular index instead
+        await mongoose.connection.db.collection('events').createIndex({ location: 1 });
+      }
+      
       await mongoose.connection.db.collection('events').createIndex({ organizer: 1 });
       await mongoose.connection.db.collection('events').createIndex({ status: 1 });
       await mongoose.connection.db.collection('events').createIndex({ category: 1 });

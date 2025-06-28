@@ -16,13 +16,17 @@ const Organizer = () => {
     pattern: '',
     description: '',
     updates: '',
+    priceAmount: '',
+    priceCurrency: 'ETB',
+    capacity: '',
   });
 
   const [image, setImage] = useState(null);
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
-  const [location, setLocation] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   
   // Dashboard stats
   const [stats, setStats] = useState({
@@ -99,6 +103,42 @@ const Organizer = () => {
     e.preventDefault();
     setLoading(true);
     setMsg('');
+
+    // Validate required fields
+    if (!image) {
+      setMsg('❌ Image is required');
+      setLoading(false);
+      return;
+    }
+
+    // Validate coordinates
+    if (!latitude || !longitude) {
+      setMsg('❌ Both latitude and longitude are required');
+      setLoading(false);
+      return;
+    }
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    
+    if (isNaN(lat) || isNaN(lng)) {
+      setMsg('❌ Invalid coordinate format. Please enter valid numbers.');
+      setLoading(false);
+      return;
+    }
+
+    // Validate coordinate ranges
+    if (lat < -90 || lat > 90) {
+      setMsg('❌ Latitude must be between -90 and 90 degrees');
+      setLoading(false);
+      return;
+    }
+
+    if (lng < -180 || lng > 180) {
+      setMsg('❌ Longitude must be between -180 and 180 degrees');
+      setLoading(false);
+      return;
+    }
   
     const formData = new FormData();
     Object.entries(form).forEach(([key, value]) => {
@@ -114,20 +154,45 @@ const Organizer = () => {
     }
   
     formData.append('organizer', userData?.name || '');
-    formData.append('location', location);
+    formData.append('latitude', lat);
+    formData.append('longitude', lng);
+    
+    // Add price data
+    formData.append('priceAmount', form.priceAmount || '0');
+    formData.append('priceCurrency', form.priceCurrency || 'ETB');
+    formData.append('capacity', form.capacity || '100');
   
+    console.log('💰 Frontend price data being sent:', {
+      priceAmount: form.priceAmount || '0',
+      priceCurrency: form.priceCurrency || 'ETB',
+      capacity: form.capacity || '100',
+      currencyType: typeof form.priceCurrency,
+      currencyLength: form.priceCurrency ? form.priceCurrency.length : 0
+    });
+
     try {
+      console.log('📤 Sending event data:', {
+        ...form,
+        latitude: lat,
+        longitude: lng,
+        hasImage: !!image,
+        hasVideo: !!video
+      });
+
       const res = await axios.post(
         'http://localhost:5000/Event-Easy/Event/createEvents',
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
         }
       );
   
+      console.log('✅ Event creation response:', res.data);
       setMsg('✅ Event created successfully!');
+      
       // Reset form after successful submission
       setForm({
         eventName: '',
@@ -136,16 +201,23 @@ const Organizer = () => {
         pattern: '',
         description: '',
         updates: '',
+        priceAmount: '',
+        priceCurrency: 'ETB',
+        capacity: '',
       });
-      setLocation('');
+      setLatitude('');
+      setLongitude('');
       setImage(null);
       setVideo(null);
       
       // Refresh stats
       fetchOrganizerEvents();
     } catch (err) {
-      console.error('Event creation error:', err);
-      setMsg('❌ Failed to create event.');
+      console.error('❌ Event creation error:', err);
+      console.error('❌ Error response:', err.response?.data);
+      
+      const errorMessage = err.response?.data?.message || 'Failed to create event';
+      setMsg(`❌ ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -320,15 +392,137 @@ const Organizer = () => {
               />
             </div>
 
+            {/* Pricing and Capacity */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block mb-1 text-gray-700 dark:text-gray-300 font-semibold">💰 Price Amount</label>
+                <input
+                  type="number"
+                  name="priceAmount"
+                  value={form.priceAmount}
+                  onChange={handleChange}
+                  placeholder="0 (Free event)"
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:text-white"
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Enter 0 for free events
+                </p>
+              </div>
+              
+              <div>
+                <label className="block mb-1 text-gray-700 dark:text-gray-300 font-semibold">💱 Currency</label>
+                <select
+                  name="priceCurrency"
+                  value={form.priceCurrency}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="ETB">ETB (Ethiopian Birr)</option>
+                  <option value="USD">USD (US Dollar)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                  <option value="GBP">GBP (British Pound)</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block mb-1 text-gray-700 dark:text-gray-300 font-semibold">👥 Capacity</label>
+                <input
+                  type="number"
+                  name="capacity"
+                  value={form.capacity}
+                  onChange={handleChange}
+                  placeholder="100"
+                  min="1"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:text-white"
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Maximum attendees
+                </p>
+              </div>
+            </div>
+
+            {/* Location Coordinates */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1 text-gray-700 dark:text-gray-300 font-semibold">Latitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                  placeholder="e.g., 9.0222 (Addis Ababa)"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Range: -90 to 90 degrees
+                </p>
+              </div>
+              
+              <div>
+                <label className="block mb-1 text-gray-700 dark:text-gray-300 font-semibold">Longitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                  placeholder="e.g., 38.7468 (Addis Ababa)"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Range: -180 to 180 degrees
+                </p>
+              </div>
+            </div>
+            
+            {/* Quick Location Presets */}
             <div>
-              <label className="block mb-1 text-gray-700 dark:text-gray-300 font-semibold">Location</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Enter event location (e.g., Addis Ababa)"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:text-white"
-              />
+              <label className="block mb-2 text-gray-700 dark:text-gray-300 font-semibold">📍 Quick Location Presets</label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLatitude('9.0222');
+                    setLongitude('38.7468');
+                  }}
+                  className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                >
+                  Addis Ababa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLatitude('8.9806');
+                    setLongitude('38.7578');
+                  }}
+                  className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                >
+                  Adama
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLatitude('7.6869');
+                    setLongitude('36.8172');
+                  }}
+                  className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                >
+                  Jimma
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLatitude('11.5890');
+                    setLongitude('37.3907');
+                  }}
+                  className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                >
+                  Bahir Dar
+                </button>
+              </div>
             </div>
 
             {/* Updates */}

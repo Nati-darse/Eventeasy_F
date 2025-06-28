@@ -1,6 +1,6 @@
 const Payment = require('../models/paymentModel');
-const Event = require('../models/eventModel');
-const User = require('../models/userModel');
+const Event = require('../models/Event');
+const User = require('../models/User');
 const chapaConfig = require('../config/chapa');
 
 /**
@@ -145,13 +145,13 @@ const verifyPayment = async (req, res) => {
  */
 const getPaymentStatus = async (req, res) => {
   try {
-    const { tx_ref } = req.params;
+    const { txRef } = req.params;
 
-    if (!tx_ref) {
+    if (!txRef) {
       return res.status(400).json({ success: false, message: 'Transaction reference is required' });
     }
 
-    const payment = await Payment.findOne({ txRef: tx_ref });
+    const payment = await Payment.findOne({ txRef: txRef });
     if (!payment) {
       return res.status(404).json({ success: false, message: 'Payment record not found' });
     }

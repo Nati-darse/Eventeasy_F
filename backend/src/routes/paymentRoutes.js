@@ -15,7 +15,7 @@ router.post('/initialize/:eventId', userAuth, initializePayment);
 router.get('/verify', verifyPayment);
 
 // Get payment status by transaction reference
-router.get('/status/:tx_ref', userAuth, getPaymentStatus);
+router.get('/status/:txRef', userAuth, getPaymentStatus);
 
 // Get all payments for a user
 router.get('/user', userAuth, getUserPayments);

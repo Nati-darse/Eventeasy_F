@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
  */
 class EmailConfig {
   constructor() {
-    this.transporter = this.createTransporter();
+    this.transporter = this.createTransport();
   }
 
   /**
@@ -14,8 +14,8 @@ class EmailConfig {
    * @private
    * @returns {object} Nodemailer transporter
    */
-  createTransporter() {
-    return nodemailer.createTransporter({
+  createTransport() {
+    return nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
       port: 587,
       service: 'Gmail',

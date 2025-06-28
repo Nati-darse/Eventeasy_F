@@ -165,11 +165,18 @@ export const AppContextProvider = (props) => {
       setError(null);
       setLoading(true);
       
+      console.log('🔐 Frontend login attempt:', { 
+        email: credentials.email, 
+        hasPassword: !!credentials.password 
+      });
+      
       const response = await axios.post(
         'http://localhost:5000/Event-Easy/users/login',
         credentials,
         { withCredentials: true }
       );
+
+      console.log('✅ Login response:', response.data);
 
       if (response.data?.token) {
         const token = response.data.token;
@@ -184,6 +191,7 @@ export const AppContextProvider = (props) => {
         throw new Error('Invalid response from server');
       }
     } catch (error) {
+      console.log('❌ Login error response:', error.response?.data);
       const errorMessage = handleError(error, 'Login');
       return { success: false, error: errorMessage };
     } finally {
