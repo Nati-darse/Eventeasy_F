@@ -4,6 +4,26 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 
 const PaymentService = {
+  async verifyIdentity(email, password) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `http://localhost:5000/Event-Easy/payment/verify-identity`,
+        { email, password },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Identity verification error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
   async initializePayment(eventId) {
     try {
       const token = localStorage.getItem('token');
@@ -54,6 +74,12 @@ const PaymentPage = () => {
   const [loading, setLoading] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [error, setError] = useState(null);
+  
+  // Identity verification state
+  const [showIdentityForm, setShowIdentityForm] = useState(false);
+  const [identityData, setIdentityData] = useState({ email: '', password: '' });
+  const [identityError, setIdentityError] = useState('');
+  const [identityVerified, setIdentityVerified] = useState(false);
 
   // Check if we're on the status page
   const isStatusPage = status && txRef;
@@ -91,6 +117,11 @@ const PaymentPage = () => {
             }
           );
           setEvent(eventResponse.data);
+          
+          // Show identity form for paid events
+          if (eventResponse.data.price && eventResponse.data.price.amount > 0) {
+            setShowIdentityForm(true);
+          }
         }
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -102,6 +133,22 @@ const PaymentPage = () => {
 
     fetchData();
   }, [eventId, isStatusPage, txRef]);
+
+  const handleIdentitySubmit = async (e) => {
+    e.preventDefault();
+    setIdentityError('');
+    
+    try {
+      setLoading(true);
+      await PaymentService.verifyIdentity(identityData.email, identityData.password);
+      setIdentityVerified(true);
+      setShowIdentityForm(false);
+    } catch (err) {
+      setIdentityError(err.response?.data?.message || 'Identity verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePayment = async () => {
     try {
@@ -172,7 +219,7 @@ const PaymentPage = () => {
             
             <p className="text-gray-600">
               {isSuccessful 
-                ? 'Your payment has been processed successfully.' 
+                ? 'Your payment has been processed successfully and you have been added to the event attendees.' 
                 : 'There was an issue processing your payment.'}
             </p>
           </div>
@@ -193,22 +240,27 @@ const PaymentPage = () => {
                   {new Date(paymentStatus.createdAt).toLocaleString()}
                 </span>
               </div>
+              {paymentStatus.event && (
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-600">Event:</span>
+                  <span className="font-semibold">{paymentStatus.event.eventName}</span>
+                </div>
+              )}
             </div>
           )}
 
           <div className="mt-6 flex flex-col space-y-3">
             {isSuccessful && (
               <button
-                onClick={() => navigate(`/attend/${paymentStatus.eventId}`)}
-                className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition-colors"
+                onClick={() => navigate('/attendee')}
+                className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold"
               >
-                View Event Details
+                View My Events
               </button>
             )}
-            
             <button
-              onClick={() => navigate('/Attendee')}
-              className="w-full bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 transition-colors"
+              onClick={() => navigate('/attendee')}
+              className="w-full bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors"
             >
               Back to Events
             </button>
@@ -218,7 +270,81 @@ const PaymentPage = () => {
     );
   }
 
-  // Payment Initiation Page
+  // Identity Verification Form
+  if (showIdentityForm && !identityVerified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-8 rounded-lg shadow-md max-w-md w-full"
+        >
+          <div className="text-center mb-6">
+            <div className="text-orange-500 text-6xl mb-4">🔐</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Verify Your Identity</h2>
+            <p className="text-gray-600">Please confirm your email and password to proceed with payment</p>
+          </div>
+
+          {event && (
+            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <h3 className="font-semibold text-gray-800 mb-2">{event.eventName}</h3>
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Amount:</span>
+                <span className="font-semibold">{event.price.amount} {event.price.currency || 'ETB'}</span>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleIdentitySubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={identityData.email}
+                onChange={(e) => setIdentityData({ ...identityData, email: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                value={identityData.password}
+                onChange={(e) => setIdentityData({ ...identityData, password: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            {identityError && (
+              <div className="text-red-500 text-sm text-center">{identityError}</div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold disabled:opacity-50"
+            >
+              {loading ? 'Verifying...' : 'Verify Identity'}
+            </button>
+          </form>
+
+          <button
+            onClick={() => navigate(-1)}
+            className="w-full mt-4 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Cancel
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Payment Page
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <motion.div 
@@ -226,73 +352,54 @@ const PaymentPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white p-8 rounded-lg shadow-md max-w-md w-full"
       >
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Complete Your Purchase</h2>
-        
+        <div className="text-center mb-6">
+          <div className="text-orange-500 text-6xl mb-4">💳</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Complete Payment</h2>
+          <p className="text-gray-600">You're about to purchase a ticket for this event</p>
+        </div>
+
         {event && (
-          <div className="mb-6">
-            <div className="flex items-center mb-4">
-              {event.imageUrl?.url && (
-                <img 
-                  src={event.imageUrl.url} 
-                  alt={event.eventName} 
-                  className="w-20 h-20 object-cover rounded-md mr-4"
-                />
-              )}
-              <div>
-                <h3 className="font-bold text-lg">{event.eventName}</h3>
-                <p className="text-gray-600 text-sm">
-                  {new Date(event.time).toLocaleDateString()} at {new Date(event.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </p>
-              </div>
-            </div>
-            
-            <div className="border-t border-b border-gray-200 py-4 my-4">
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-600">Ticket Price:</span>
-                <span className="font-semibold">{event.price?.amount || 100} ETB</span>
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 className="font-semibold text-gray-800 mb-2">{event.eventName}</h3>
+            <div className="space-y-2 text-sm text-gray-600">
+              <div className="flex justify-between">
+                <span>Amount:</span>
+                <span className="font-semibold">{event.price.amount} {event.price.currency || 'ETB'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Service Fee:</span>
-                <span className="font-semibold">0 ETB</span>
+                <span>Date:</span>
+                <span>{new Date(event.time).toLocaleDateString()}</span>
               </div>
-            </div>
-            
-            <div className="flex justify-between text-lg font-bold">
-              <span>Total:</span>
-              <span>{event.price?.amount || 100} ETB</span>
+              {event.location?.address && (
+                <div className="flex justify-between">
+                  <span>Location:</span>
+                  <span className="text-right">{event.location.address}</span>
+                </div>
+              )}
             </div>
           </div>
         )}
-        
-        <div className="mt-6">
+
+        <div className="space-y-3">
           <button
             onClick={handlePayment}
             disabled={loading}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
+            className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold disabled:opacity-50"
           >
-            {loading ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Processing...
-              </span>
-            ) : (
-              'Pay with Chapa'
-            )}
+            {loading ? 'Processing...' : 'Proceed to Payment'}
           </button>
           
           <button
             onClick={() => navigate(-1)}
-            className="w-full mt-3 border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+            className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors"
           >
             Cancel
           </button>
         </div>
-        
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>By completing this purchase, you agree to our Terms of Service and Privacy Policy.</p>
+
+        <div className="mt-6 text-center text-xs text-gray-500">
+          <p>🔒 Your payment will be processed securely by Chapa</p>
+          <p>📧 You'll receive a confirmation email after successful payment</p>
         </div>
       </motion.div>
     </div>

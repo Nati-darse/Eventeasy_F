@@ -122,6 +122,13 @@ const eventSchema = new mongoose.Schema({
     ref: 'User',
   }],
 
+  // Current attendees count for performance
+  currentAttendees: {
+    type: Number,
+    default: 0,
+    min: [0, 'Current attendees cannot be negative'],
+  },
+
   // Event management
   status: {
     type: String,
@@ -133,9 +140,9 @@ const eventSchema = new mongoose.Schema({
   },
 
   // Capacity and pricing
-  capacity: {
+  maxAttendees: {
     type: Number,
-    min: [1, 'Capacity must be at least 1'],
+    min: [1, 'Max attendees must be at least 1'],
     default: 100,
   },
 
@@ -206,7 +213,7 @@ eventSchema.virtual('attendeeCount').get(function() {
  * Virtual for available spots
  */
 eventSchema.virtual('availableSpots').get(function() {
-  return this.capacity - this.attendeeCount;
+  return this.maxAttendees - this.attendeeCount;
 });
 
 /**
@@ -261,7 +268,7 @@ eventSchema.methods.addAttendee = function(userId) {
     return false; // Already attending
   }
   
-  if (this.attendeeCount >= this.capacity) {
+  if (this.attendeeCount >= this.maxAttendees) {
     throw new Error('Event is at full capacity');
   }
   

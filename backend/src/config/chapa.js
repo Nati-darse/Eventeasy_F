@@ -9,8 +9,11 @@ class ChapaConfig {
     this.baseUrl = 'https://api.chapa.co/v1';
     this.secretKey = process.env.CHAPA_SECRET_KEY;
     this.publicKey = process.env.CHAPA_PUBLIC_KEY;
-    this.callbackUrl = process.env.FRONTEND_URL + '/payment/callback';
-    this.returnUrl = process.env.FRONTEND_URL + '/payment/success';
+    
+    // Use localhost for development
+    const frontendUrl = 'http://localhost:5173';
+    this.callbackUrl = `${frontendUrl}/payment/thank-you`;
+    this.returnUrl = `${frontendUrl}/payment/thank-you`;
   }
 
   /**
@@ -21,6 +24,9 @@ class ChapaConfig {
   async initializePayment(paymentData) {
     try {
       const { amount, email, firstName, lastName, tx_ref, title, description } = paymentData;
+      
+      // Shorten title to meet Chapa's 16-character limit
+      const shortTitle = title ? title.substring(0, 16) : 'Event Payment';
       
       const response = await axios.post(
         `${this.baseUrl}/transaction/initialize`,
@@ -34,7 +40,7 @@ class ChapaConfig {
           callback_url: this.callbackUrl,
           return_url: this.returnUrl,
           customization: {
-            title: title || 'Event Easy Payment',
+            title: shortTitle,
             description: description || 'Payment for event ticket',
           },
         },

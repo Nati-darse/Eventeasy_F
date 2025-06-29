@@ -15,6 +15,7 @@ import EventManagement from './Pages/eventManagement.jsx';
 import EventDetail from './Pages/eventDetail.jsx';
 import AttendeeEventPage from './Pages/attendEvent.jsx';
 import PaymentPage from './Pages/PaymentPage.jsx';
+import ThankYouPage from './Pages/ThankYouPage.jsx';
 import SearchResults from './Pages/SearchResults.jsx';
 import MapComparison from './Pages/MapComparison.jsx';
 
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/attend/:id" element={<AttendeeEventPage/>}/>
         <Route path="/payment/:eventId" element={<PaymentPage />} />
         <Route path="/payment/status" element={<PaymentPage />} />
+        <Route path="/payment/thank-you" element={<ThankYouPage />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/map-comparison" element={<MapComparison />} />
       </Routes>

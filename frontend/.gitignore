@@ -1,9 +1,7 @@
-.env
-.env.local
-.env.development
-.env.production
-.env.development.local
-.env.production.local
+
+*.sln
+*.sw?
+.vercel
 
 .env
 .env.local
