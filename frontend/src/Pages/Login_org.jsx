@@ -10,8 +10,7 @@ import { useToast } from "../hooks/useToast.js";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
 
 export default function OrganizerLogin() {
-  const { setIsLoggedin, getUserData, login, register, loading } = useContext(AppContent);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const { setIsLoggedin, getUserData, login, register, loading, showError, showSuccess } = useContext(AppContent);
   const navigate = useNavigate();
   const [state, setState] = useState("Sign In");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,15 +18,26 @@ export default function OrganizerLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { success, error } = useToast();
 
+  // Helper function to show error with fallback
+  const displayError = (message) => {
+    error(message);
+    showError(message);
+    // Fallback alert
+    alert(`Error: ${message}`);
+  };
+
+  // Helper function to show success with fallback
+  const displaySuccess = (message) => {
+    success(message);
+    showSuccess(message);
+  };
+
   // Form validation
   const validationSchema = {
     name: state === 'Sign Up' ? validationRules.name : {},
     email: validationRules.email,
     password: validationRules.password,
-    confirmPassword: state === 'Sign Up' ? {
-      required: true,
-      validate: (value, values) => value === values.password ? [] : ['Passwords do not match']
-    } : {},
+    confirmPassword: state === 'Sign Up' ? validationRules.confirmPassword : {},
   };
 
   const {
@@ -48,7 +58,7 @@ export default function OrganizerLogin() {
     e.preventDefault();
     
     if (!validateAll()) {
-      error('Please fix the errors in the form');
+      displayError('Please fix the errors in the form');
       return;
     }
 
@@ -64,10 +74,10 @@ export default function OrganizerLogin() {
         });
 
         if (result.success) {
-          success("Signup successful! Welcome to Event Easy! 🎉");
+          displaySuccess("Signup successful! Welcome to Event Easy! 🎉");
           navigate("/email-verify");
         } else {
-          error(result.error || "Signup failed");
+          displayError(result.error || "Signup failed. Please try again.");
         }
       } else {
         const result = await login({
@@ -76,15 +86,15 @@ export default function OrganizerLogin() {
         });
 
         if (result.success) {
-          success("Login successful! Welcome back! 🎉");
+          displaySuccess("Login successful! Welcome back! 🎉");
           navigate("/Organizer_Dashboard");
         } else {
-          error(result.error || "Login failed");
+          displayError(result.error || "Login failed. Please check your credentials and try again.");
         }
       }
     } catch (err) {
       console.error("Auth error:", err);
-      error("An unexpected error occurred. Please try again.");
+      displayError("An unexpected error occurred. Please try again or contact support if the problem persists.");
     } finally {
       setIsSubmitting(false);
     }
@@ -93,59 +103,18 @@ export default function OrganizerLogin() {
   const handleGoogleSuccess = async (data) => {
     setIsLoggedin(true);
     await getUserData();
-    success("Google login successful! Welcome! 🎉");
+    displaySuccess("Google login successful! Welcome! 🎉");
     navigate("/Organizer_Dashboard");
   };
 
   const handleGoogleError = (errorMessage) => {
-    error("Google login failed: " + errorMessage);
+    displayError("Google login failed: " + errorMessage);
   };
 
   const handleStateChange = () => {
     setState(state === "Sign In" ? "Sign Up" : "Sign In");
     reset();
   };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  // Custom cursor with better color scheme
-  const CustomCursor = () => (
-    <>
-      <motion.div
-        className="fixed w-8 h-8 rounded-full pointer-events-none z-50 mix-blend-difference"
-        style={{
-          left: mousePos.x - 16,
-          top: mousePos.y - 16,
-          background: 'radial-gradient(circle, rgba(251,146,60,0.8) 0%, rgba(234,88,12,0.6) 70%)',
-          boxShadow: '0 0 15px rgba(251,146,60,0.5), 0 0 30px rgba(234,88,12,0.3)'
-        }}
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.8, 1, 0.8],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      <motion.div
-        className="fixed w-4 h-4 rounded-full pointer-events-none z-50 mix-blend-difference"
-        style={{
-          left: mousePos.x - 8,
-          top: mousePos.y - 8,
-          background: 'white',
-          boxShadow: '0 0 10px white'
-        }}
-      />
-    </>
-  );
 
   return (
     <motion.div
@@ -154,8 +123,6 @@ export default function OrganizerLogin() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      <CustomCursor />
-      
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
         {/* Left Side - Form */}
         <div className="flex-1 p-6 flex flex-col justify-center">

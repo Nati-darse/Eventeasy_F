@@ -5,18 +5,13 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { AppContextProvider } from "./context/AppContext.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
-import { ToastContainer } from "./components/Toast.jsx";
-import { useToast } from "./hooks/useToast.js";
 
-// Main App wrapper with toast functionality
+// Main App wrapper
 const AppWrapper = () => {
-  const { toasts, removeToast } = useToast();
-
   return (
     <ErrorBoundary>
       <AppContextProvider>
         <App />
-        <ToastContainer toasts={toasts} removeToast={removeToast} />
       </AppContextProvider>
     </ErrorBoundary>
   );

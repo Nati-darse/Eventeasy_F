@@ -10,15 +10,25 @@ export const validationRules = {
   },
   password: {
     required: true,
-    minLength: 6,
-    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-    message: 'Password must be at least 6 characters with uppercase, lowercase, and number'
+    minLength: 8,
+    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+    message: 'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
+  },
+  confirmPassword: {
+    required: true,
+    validate: (value, values) => {
+      if (value !== values.password) {
+        return ['Passwords do not match'];
+      }
+      return [];
+    }
   },
   name: {
     required: true,
     minLength: 2,
     maxLength: 50,
-    message: 'Name must be between 2 and 50 characters'
+    pattern: /^[a-zA-Z\s]+$/,
+    message: 'Name must be between 2 and 50 characters and contain only letters and spaces'
   },
   eventName: {
     required: true,
@@ -33,7 +43,7 @@ export const validationRules = {
 };
 
 // Validation function
-export const validateField = (value, rules) => {
+export const validateField = (value, rules, allValues = {}) => {
   const errors = [];
 
   if (rules.required && (!value || value.trim() === '')) {
@@ -50,6 +60,14 @@ export const validateField = (value, rules) => {
 
   if (value && rules.pattern && !rules.pattern.test(value)) {
     errors.push(rules.message || 'Invalid format');
+  }
+
+  // Handle custom validation
+  if (value && rules.validate && typeof rules.validate === 'function') {
+    const customErrors = rules.validate(value, allValues);
+    if (Array.isArray(customErrors)) {
+      errors.push(...customErrors);
+    }
   }
 
   return errors;
@@ -171,6 +189,14 @@ export const useFormValidation = (initialValues, validationSchema) => {
 
     if (value && rules.pattern && !rules.pattern.test(value)) {
       fieldErrors.push(rules.message || 'Invalid format');
+    }
+
+    // Handle custom validation
+    if (value && rules.validate && typeof rules.validate === 'function') {
+      const customErrors = rules.validate(value, values);
+      if (Array.isArray(customErrors)) {
+        fieldErrors.push(...customErrors);
+      }
     }
 
     return fieldErrors;

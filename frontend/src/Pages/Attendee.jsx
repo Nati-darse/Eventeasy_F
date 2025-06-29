@@ -32,6 +32,7 @@ const AttendeePage = () => {
   // State for events and filtering
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [showMap, setShowMap] = useState(false);
 
   // State for reviews
   const [ratings, setRatings] = useState({});
@@ -340,17 +341,6 @@ const AttendeePage = () => {
                 {/* Capacity Info */}
                 <div className="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
                   👥 {event.attendees?.length || 0}/{event.capacity || 100} spots
-                </div>
-
-                {/* Event Status */}
-                <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                  event.status === 'approved' ? 'bg-green-100 text-green-800' :
-                  event.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {event.status === 'approved' ? '✅ Approved' :
-                   event.status === 'pending' ? '⏳ Pending' :
-                   '❌ Rejected'}
                 </div>
               </div>
 

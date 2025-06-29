@@ -18,10 +18,13 @@ import PaymentPage from './Pages/PaymentPage.jsx';
 import ThankYouPage from './Pages/ThankYouPage.jsx';
 import SearchResults from './Pages/SearchResults.jsx';
 import MapComparison from './Pages/MapComparison.jsx';
+import { ToastContainer } from './Components/Toast.jsx';
+import { useToast } from './hooks/useToast.js';
 
 export default function App() {
   // Check for dark mode preference
   const [darkMode, setDarkMode] = useState(false);
+  const { toasts, removeToast } = useToast();
 
   useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
@@ -33,6 +36,7 @@ export default function App() {
 
   return (
     <div className={darkMode ? 'dark' : ''}>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/Classify" element={<Classify_SU />} />

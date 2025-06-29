@@ -1,6 +1,7 @@
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const emailConfig = require('../config/email');
+const jwt = require('jsonwebtoken');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -76,7 +77,15 @@ class AuthController {
       }
 
       // Generate JWT token
-      const token = user.generateAuthToken();
+      const token = jwt.sign(
+        { 
+          id: user._id,
+          email: user.email,
+          role: user.role,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      );
 
       // Set cookie
       res.cookie('token', token, {
