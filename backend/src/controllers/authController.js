@@ -2,6 +2,7 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const emailConfig = require('../config/email');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -172,6 +173,106 @@ class AuthController {
         success: false,
         message: 'Failed to link Google account',
         error: error.message,
+      });
+    }
+  }
+
+  /**
+   * Admin login endpoint
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   */
+  static async adminLogin(req, res) {
+    try {
+      const { email, password } = req.body;
+
+      // Validate input
+      if (!email || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email and password are required'
+        });
+      }
+
+      // Find user by email
+      const user = await User.findOne({ email }).select('+password');
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid credentials'
+        });
+      }
+
+      // Check if user is admin or super admin
+      if (!['admin', 'super_admin'].includes(user.role)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. Admin privileges required.'
+        });
+      }
+
+      // Check if user is verified
+      if (!user.isVerified) {
+        return res.status(401).json({
+          success: false,
+          message: 'Please verify your email before logging in'
+        });
+      }
+
+      // Check if user is suspended
+      if (user.isSuspended) {
+        return res.status(401).json({
+          success: false,
+          message: `Account suspended: ${user.suspensionReason || 'No reason provided'}`
+        });
+      }
+
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid credentials'
+        });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      );
+
+      // Set cookie
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'Strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
+      // Log admin login
+      console.log(`🔐 Admin login: ${user.email} (${user.role})`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Admin login successful',
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isVerified: user.isVerified,
+          adminPermissions: user.adminPermissions || {}
+        }
+      });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.message
       });
     }
   }

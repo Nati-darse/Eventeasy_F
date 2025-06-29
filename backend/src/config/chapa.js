@@ -10,10 +10,10 @@ class ChapaConfig {
     this.secretKey = process.env.CHAPA_SECRET_KEY;
     this.publicKey = process.env.CHAPA_PUBLIC_KEY;
     
-    // Use localhost for development
+    // Use localhost for development - match the PaymentPage route
     const frontendUrl = 'http://localhost:5173';
-    this.callbackUrl = `${frontendUrl}/payment/thank-you`;
-    this.returnUrl = `${frontendUrl}/payment/thank-you`;
+    this.callbackUrl = `${frontendUrl}/payment`;
+    this.returnUrl = `${frontendUrl}/payment`;
   }
 
   /**
