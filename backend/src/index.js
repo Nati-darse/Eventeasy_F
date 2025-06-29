@@ -41,14 +41,24 @@ app.use(generalLimiter);
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:5172',
   'http://localhost:3000',
-  'https://event-easy-n4tha.vercel.app'
+  'https://event-easy-n4tha.vercel.app',
+  'https://accounts.google.com',
+  'https://www.googleapis.com'
 ];
 
 app.use(cors({ 
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
+    
+    // Allow Google domains for FedCM
+    if (origin.includes('googleusercontent.com') || 
+        origin.includes('accounts.google.com') ||
+        origin.includes('www.googleapis.com')) {
+      return callback(null, true);
+    }
     
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
@@ -58,7 +68,21 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers',
+    'Sec-Fetch-Mode',
+    'Sec-Fetch-Site',
+    'Sec-Fetch-Dest'
+  ],
+  exposedHeaders: ['Set-Cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 // Body parsing middleware
@@ -75,6 +99,15 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     database: dbHealth,
     environment: process.env.NODE_ENV || 'development',
+  });
+});
+
+// Google OAuth test endpoint
+app.get('/google-config', (req, res) => {
+  res.status(200).json({
+    success: true,
+    googleClientId: process.env.GOOGLE_CLIENT_ID ? 'Configured' : 'Not configured',
+    hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
   });
 });
 

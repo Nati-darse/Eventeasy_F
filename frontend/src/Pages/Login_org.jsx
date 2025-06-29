@@ -37,10 +37,7 @@ export default function OrganizerLogin() {
     name: state === 'Sign Up' ? validationRules.name : {},
     email: validationRules.email,
     password: validationRules.password,
-    confirmPassword: state === 'Sign Up' ? {
-      required: true,
-      validate: (value, values) => value === values.password ? [] : ['Passwords do not match']
-    } : {},
+    confirmPassword: state === 'Sign Up' ? validationRules.confirmPassword : {},
   };
 
   const {
