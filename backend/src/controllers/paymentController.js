@@ -306,7 +306,7 @@ const verifyPayment = async (req, res) => {
 
     // Redirect to thank you page
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${frontendUrl}/payment?status=${payment.status}&tx_ref=${tx_ref}`);
+    res.redirect(`${frontendUrl}/payment/thank-you?status=${payment.status}&tx_ref=${tx_ref}`);
   } catch (error) {
     console.error('Payment verification error:', error);
     res.status(500).json({

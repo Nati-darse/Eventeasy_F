@@ -4,11 +4,13 @@ import { FaCalendarCheck, FaUsers, FaTicketAlt, FaCreditCard } from 'react-icons
 import { useToast } from '../hooks/useToast';
 import LoadingSpinner from './LoadingSpinner';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const EventBooking = ({ event, onBookingSuccess, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [bookingType, setBookingType] = useState('rsvp'); // 'rsvp' or 'ticket'
   const { success, error } = useToast();
+  const navigate = useNavigate();
 
   const handleRSVP = async () => {
     setIsLoading(true);
@@ -38,8 +40,7 @@ const EventBooking = ({ event, onBookingSuccess, onClose }) => {
   };
 
   const handleTicketPurchase = () => {
-    // Redirect to payment page
-    window.location.href = `/payment/${event._id}`;
+    navigate(`/payment/${event._id}`);
   };
 
   const isPaidEvent = event.price?.amount > 0;

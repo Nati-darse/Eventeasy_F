@@ -219,14 +219,37 @@ const attendEvent = async (req, res) => {
     const event = await Event.findById(id);
     if (!event) return res.status(404).json({ success: false, message: 'Event not found' });
 
+    // Check if user is already registered
     if (event.attendees.includes(userId)) {
       return res.status(400).json({ success: false, message: 'User already registered' });
     }
 
-    event.attendees.push(userId);
-    await event.save();
+    // Check if event is full
+    if (event.attendees.length >= event.capacity) {
+      return res.status(400).json({ success: false, message: 'Event is full' });
+    }
 
-    res.status(200).json({ success: true, message: 'User registered successfully' });
+    // Free event: add user immediately
+    if (!event.price || !event.price.amount || event.price.amount === 0) {
+      // Use direct update to avoid full document validation
+      await Event.updateOne(
+        { _id: event._id, attendees: { $ne: userId } },
+        {
+          $addToSet: { attendees: userId },
+          $set: { currentAttendees: event.attendees.length + 1 }
+        }
+      );
+      return res.status(200).json({ success: true, message: 'User registered successfully (free event)' });
+    }
+
+    // Paid event: do not add user, instruct to pay
+    return res.status(200).json({
+      success: true,
+      message: 'Payment required to reserve a spot',
+      paymentRequired: true,
+      eventId: event._id,
+      price: event.price
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });

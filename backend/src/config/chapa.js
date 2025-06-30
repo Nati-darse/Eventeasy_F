@@ -12,8 +12,8 @@ class ChapaConfig {
     
     // Use localhost for development - match the PaymentPage route
     const frontendUrl = 'http://localhost:5173';
-    this.callbackUrl = `${frontendUrl}/payment`;
-    this.returnUrl = `${frontendUrl}/payment`;
+    this.callbackUrl = `${frontendUrl}/payment/thank-you`;
+    this.returnUrl = `${frontendUrl}/payment/thank-you`;
   }
 
   /**
