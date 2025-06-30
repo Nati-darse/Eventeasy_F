@@ -23,7 +23,7 @@ const ThankYouPage = () => {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5000/Event-Easy/payment/status/${txRef}`, {
+        const response = await fetch(`https://eventeasy-56uy.onrender.com/Event-Easy/payment/status/${txRef}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -8,7 +8,7 @@ const GoogleAuth = ({ onSuccess, onError, role = 'attendee', buttonText = 'Conti
   const handleCredentialResponse = useCallback(async (response) => {
     setIsLoading(true);
     try {
-      const result = await axios.post('http://localhost:5000/Event-Easy/auth/google', {
+      const result = await axios.post('https://eventeasy-56uy.onrender.com/Event-Easy/auth/google', {
         credential: response.credential,
         role: role,
       }, {

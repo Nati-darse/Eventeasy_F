@@ -110,7 +110,7 @@ export const AppContextProvider = (props) => {
   const getUserData = async () => {
     try {
       setError(null);
-      const { data } = await axios.get('http://localhost:5000/Event-Easy/user/data', { 
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/Event-Easy/user/data`, { 
         withCredentials: true,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -141,7 +141,7 @@ export const AppContextProvider = (props) => {
   const getAuthState = async () => {
     try {
       setError(null);
-      const { data } = await axios.get('http://localhost:5000/Event-Easy/users/is-auth', { 
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/Event-Easy/users/is-auth`, { 
         withCredentials: true,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -167,7 +167,7 @@ export const AppContextProvider = (props) => {
   // Enhanced logout function
   const logout = async () => {
     try {
-      await axios.post('http://localhost:5000/Event-Easy/users/logout', {}, { 
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/Event-Easy/users/logout`, {}, { 
         withCredentials: true 
       });
     } catch (error) {
@@ -194,7 +194,7 @@ export const AppContextProvider = (props) => {
       });
       
       const response = await axios.post(
-        'http://localhost:5000/Event-Easy/users/login',
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/Event-Easy/users/login`,
         credentials,
         { withCredentials: true }
       );
@@ -235,7 +235,7 @@ export const AppContextProvider = (props) => {
       setLoading(true);
       
       const response = await axios.post(
-        'http://localhost:5000/Event-Easy/users/register',
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/Event-Easy/users/register`,
         userData,
         { withCredentials: true }
       );

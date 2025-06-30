@@ -16,7 +16,7 @@ const EventBooking = ({ event, onBookingSuccess, onClose }) => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:5000/Event-Easy/Event/events/${event._id}/attend`,
+        `https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${event._id}/attend`,
         {},
         {
           headers: {

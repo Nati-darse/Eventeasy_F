@@ -44,7 +44,7 @@ const SuperAdmin = () => {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/Event-Easy/admin/analytics', {
+      const response = await axios.get('https://eventeasy-56uy.onrender.com/Event-Easy/admin/analytics', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setAnalytics(response.data.data);
@@ -56,7 +56,7 @@ const SuperAdmin = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/Event-Easy/admin/users', {
+      const response = await axios.get('https://eventeasy-56uy.onrender.com/Event-Easy/admin/users', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       const allUsers = response.data.data.users;
@@ -71,7 +71,7 @@ const SuperAdmin = () => {
 
   const createAdmin = async () => {
     try {
-      await axios.post('http://localhost:5000/Event-Easy/admin/users/admin', newAdmin, {
+      await axios.post('https://eventeasy-56uy.onrender.com/Event-Easy/admin/users/admin', newAdmin, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setShowCreateAdminModal(false);
@@ -97,7 +97,7 @@ const SuperAdmin = () => {
 
   const updateAdminPermissions = async (adminId, permissions) => {
     try {
-      await axios.put(`http://localhost:5000/Event-Easy/admin/users/${adminId}/permissions`, {
+      await axios.put(`https://eventeasy-56uy.onrender.com/Event-Easy/admin/users/${adminId}/permissions`, {
         adminPermissions: permissions,
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
@@ -112,7 +112,7 @@ const SuperAdmin = () => {
 
   const toggleUserSuspension = async (userId, suspend, reason = '') => {
     try {
-      await axios.put(`http://localhost:5000/Event-Easy/admin/users/${userId}/suspension`, {
+      await axios.put(`https://eventeasy-56uy.onrender.com/Event-Easy/admin/users/${userId}/suspension`, {
         suspend,
         reason,
       }, {
@@ -132,7 +132,7 @@ const SuperAdmin = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5000/Event-Easy/admin/users/${userId}`, {
+      await axios.delete(`https://eventeasy-56uy.onrender.com/Event-Easy/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       fetchUsers();

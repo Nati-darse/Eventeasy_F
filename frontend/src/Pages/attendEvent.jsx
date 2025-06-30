@@ -20,7 +20,7 @@ const AttendeeEventPage = () => {
       return;
     }
 
-    fetch(`http://localhost:5000/Event-Easy/Event/events/${id}`, {
+    fetch(`https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -46,7 +46,7 @@ const AttendeeEventPage = () => {
 
   const handleRegister = () => {
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:5000/Event-Easy/Event/events/${id}/attend`, {
+    fetch(`https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${id}/attend`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

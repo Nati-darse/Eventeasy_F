@@ -35,7 +35,7 @@ const Admin = () => {
 
   const fetchUserData = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/Event-Easy/users/users", {
+      const res = await axios.get("https://eventeasy-56uy.onrender.com/Event-Easy/users/users", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const users = res.data;
@@ -48,7 +48,7 @@ const Admin = () => {
 
   const fetchEventData = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/Event-Easy/Event/events");
+      const res = await axios.get("https://eventeasy-56uy.onrender.com/Event-Easy/Event/events");
       const events = res.data;
       setEventStats({
         total: events.length,

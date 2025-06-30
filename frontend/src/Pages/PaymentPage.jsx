@@ -8,7 +8,7 @@ const PaymentService = {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        `http://localhost:5000/Event-Easy/payment/verify-identity`,
+        `https://eventeasy-56uy.onrender.com/Event-Easy/payment/verify-identity`,
         { email, password },
         {
           headers: {
@@ -28,7 +28,7 @@ const PaymentService = {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        `http://localhost:5000/Event-Easy/payment/initialize/${eventId}`,
+        `https://eventeasy-56uy.onrender.com/Event-Easy/payment/initialize/${eventId}`,
         {},
         {
           headers: {
@@ -47,7 +47,7 @@ const PaymentService = {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `http://localhost:5000/Event-Easy/payment/status/${txRef}`,
+        `https://eventeasy-56uy.onrender.com/Event-Easy/payment/status/${txRef}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -97,7 +97,7 @@ const PaymentPage = () => {
           // Also fetch event details if we have eventId
           if (paymentData.data.eventId) {
             const eventResponse = await axios.get(
-              `http://localhost:5000/Event-Easy/Event/events/${paymentData.data.eventId}`,
+              `https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${paymentData.data.eventId}`,
               {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -109,7 +109,7 @@ const PaymentPage = () => {
         } else if (eventId) {
           // Fetch event details
           const eventResponse = await axios.get(
-            `http://localhost:5000/Event-Easy/Event/events/${eventId}`,
+            `https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${eventId}`,
             {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
