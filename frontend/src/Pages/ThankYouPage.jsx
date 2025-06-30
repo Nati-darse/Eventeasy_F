@@ -95,7 +95,22 @@ const ThankYouPage = () => {
                   <CheckCircle className="w-20 h-20 text-green-300" />
                 </motion.div>
                 <h1 className="text-4xl font-bold mb-2">🎉 Payment Successful!</h1>
-                <p className="text-xl opacity-90">Your ticket has been confirmed</p>
+                <p className="text-xl opacity-90 mb-2">Your ticket has been confirmed.</p>
+                <p className="text-lg mb-4">Thank you for your purchase! You can now view your ticket and event details in your dashboard.</p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+                  <button
+                    onClick={() => navigate('/attendee')}
+                    className="bg-white text-green-600 font-semibold px-6 py-3 rounded-xl shadow hover:bg-green-50 transition-colors"
+                  >
+                    View My Events
+                  </button>
+                  <button
+                    onClick={() => navigate('/')}
+                    className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-xl shadow hover:bg-blue-50 transition-colors"
+                  >
+                    Back to Home
+                  </button>
+                </div>
               </>
             ) : (
               <>

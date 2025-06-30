@@ -40,10 +40,9 @@ app.use(generalLimiter);
 
 // CORS configuration
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5172',
-  'http://localhost:3000',
+  /^http:\/\/localhost:\d+$/, // Allow all localhost ports for dev
   'https://event-easy-n4tha.vercel.app',
+  // Add more production origins as needed
   'https://accounts.google.com',
   'https://www.googleapis.com'
 ];
@@ -52,19 +51,21 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
     // Allow Google domains for FedCM
     if (origin.includes('googleusercontent.com') || 
         origin.includes('accounts.google.com') ||
         origin.includes('www.googleapis.com')) {
       return callback(null, true);
     }
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    // Allow all localhost ports for dev
+    if (/^http:\/\/localhost:\d+$/.test(origin)) {
+      return callback(null, true);
     }
+    // Allow listed string origins
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS: ' + origin));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

@@ -59,8 +59,12 @@ const AttendeeEventPage = () => {
         if (data.success) {
           setAttending(true);
           success('Successfully registered for the event!');
+          // Redirect to attendee page for free events
+          if (!event.price || !event.price.amount || event.price.amount === 0) {
+            navigate('/attendee');
+          }
         } else {
-          error('Registration failed');
+          error(data.message || 'Registration failed');
         }
       })
       .catch((err) => error('Error registering: ' + err.message));
@@ -202,13 +206,16 @@ const AttendeeEventPage = () => {
               </button>
             ) : (
               <>
-                <button
-                  onClick={handleRegister}
-                  className="px-6 py-3 rounded-full font-medium text-lg bg-indigo-600 text-white transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  Register for Free
-                </button>
-                
+                {/* Only show Register for Free if event is free */}
+                {(!event.price || !event.price.amount || event.price.amount === 0) && (
+                  <button
+                    onClick={handleRegister}
+                    className="px-6 py-3 rounded-full font-medium text-lg bg-indigo-600 text-white transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    Register for Free
+                  </button>
+                )}
+                {/* Only show Buy Ticket if event is paid */}
                 {event.price?.amount > 0 && (
                   <button
                     onClick={handleBuyTicket}
