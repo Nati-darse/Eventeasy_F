@@ -11,6 +11,9 @@ const EmailVerify = () => {
   const [isVerified, setIsVerified] = useState(false);
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
+  const [resendMessage, setResendMessage] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleOtpChange = (e, index) => {
     const value = e.target.value;
@@ -43,16 +46,20 @@ const EmailVerify = () => {
         "http://localhost:5000/Event-Easy/users/verify-otp",
         { otp: otpString },
         {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
+          withCredentials: true,
         }
       );
 
       if (response.status === 200) {
         setIsVerified(true);
-        success('Email verified successfully!');
-        navigate("/Attendee_Dashboard");
+        setShowSuccess(true);
+        success('Email verified successfully! Please log in.');
+        // Remove token and userEmail from localStorage for security
+        localStorage.removeItem('token');
+        localStorage.removeItem('userEmail');
+        setTimeout(() => {
+          navigate("/Login_Attendee");
+        }, 2000);
       }
     } catch (error) {
       if (error.response && error.response.data) {
@@ -63,11 +70,49 @@ const EmailVerify = () => {
     }
   };
 
+  const handleResendOtp = async (e) => {
+    e.preventDefault();
+    setResendMessage("");
+    setError("");
+    setResendLoading(true);
+    try {
+      const userToken = localStorage.getItem("token");
+      if (!userToken) {
+        toastError('You are not logged in. Please log in first.');
+        navigate("/login");
+        return;
+      }
+      // Get user email from token or localStorage (assuming you store it)
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) {
+        setError("User email not found. Please log in again.");
+        setResendLoading(false);
+        return;
+      }
+      const response = await axios.post(
+        "http://localhost:5000/Event-Easy/users/send-verify-otp",
+        { email: userEmail },
+        {
+          withCredentials: true,
+        }
+      );
+      if (response.data.success) {
+        setResendMessage("OTP resent successfully! Check your email.");
+      } else {
+        setError(response.data.message || "Failed to resend OTP.");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to resend OTP.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isVerified) {
-      navigate("/Attendee");
+      // Do not auto-navigate to dashboard, handled above
     }
-  }, [isVerified, navigate]);
+  }, [isVerified]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
@@ -102,10 +147,21 @@ const EmailVerify = () => {
         </form>
         
         {error && <p className="mt-4 text-center text-red-500">{error}</p>}
-
+        {resendMessage && <p className="mt-4 text-center text-green-500">{resendMessage}</p>}
         <p className="mt-4 text-center text-sm text-gray-500">
-          Didn't receive the OTP? <a href="#" className="text-indigo-600 hover:text-indigo-700">Resend OTP</a>
+          Didn't receive the OTP?{' '}
+          <button
+            className="text-indigo-600 hover:text-indigo-700 underline disabled:opacity-50"
+            onClick={handleResendOtp}
+            disabled={resendLoading}
+            type="button"
+          >
+            {resendLoading ? 'Resending...' : 'Resend OTP'}
+          </button>
         </p>
+        {showSuccess && (
+          <p className="mt-4 text-center text-green-600 font-semibold">Email verified! Redirecting to login...</p>
+        )}
       </div>
     </div>
   );

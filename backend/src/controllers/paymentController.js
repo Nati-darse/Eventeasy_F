@@ -14,17 +14,17 @@ const nodemailer = require('nodemailer');
 const sendPaymentConfirmationEmail = async (payment, event, user) => {
   try {
     // Create transporter
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: process.env.SENDER_EMAIL,
+        pass: process.env.SENDER_PASS
       }
     });
 
     // Email content
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: `🎉 Payment Confirmed - ${event.eventName}`,
       html: `

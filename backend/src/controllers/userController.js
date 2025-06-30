@@ -14,15 +14,19 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "User already exists!" });
     }
 
-    const salt = await bcrypt.genSalt(parseInt(process.env.SALT_ROUNDS) || 10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
+    // Remove manual hashing, let pre-save middleware handle it
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password, // Pass plain password
       role,
     });
+
+    // Generate OTP and save to user
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    user.verifyOtp = otp;
+    user.verifyOtpExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await user.save();
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
@@ -35,17 +39,17 @@ const registerUser = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    // Send welcome email
+    // Send OTP email
     try {
-      await emailConfig.sendWelcomeEmail(user.email, user.name);
-      console.log("Welcome email sent to:", email);
+      await emailConfig.sendOTPEmail(user.email, otp);
+      console.log("OTP sent to:", email);
     } catch (emailError) {
-      console.error("Error sending email:", emailError);
+      console.error("Error sending OTP email:", emailError);
     }
 
     return res.status(200).json({ 
       success: true,
-      message: "User created successfully", 
+      message: "User created successfully. OTP sent to your email.", 
       user: user.profile || user, 
       token 
     });
@@ -76,6 +80,11 @@ const loginUser = async (req, res) => {
     if (!user) {
       console.log('❌ User not found:', email);
       return res.status(400).json({ success: false, message: "User not found!" });
+    }
+
+    if (!user.isVerified) {
+      console.log('❌ User not verified:', email);
+      return res.status(400).json({ success: false, message: "Account not verified. Please check your email for the OTP and verify your account before logging in." });
     }
 
     console.log('👤 User found:', { 
@@ -188,19 +197,20 @@ const verifyOtp = async (req, res) => {
   const { otp } = req.body;
   const userId = req.user.id;
   try {
-    const user = await User.findById(userId);
+    // Select OTP fields explicitly since they are select: false
+    const user = await User.findById(userId).select('+verifyOtp +verifyOtpExpires');
     if (!user) {
       return res.status(400).json({ message: "User not found!" });
     }
-    if (user.verifyOtp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP!" });
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User already verified!" });
     }
-    if (Date.now() > user.verifyOtpExpires) {
-      return res.status(400).json({ message: "OTP expired!" });
+    // Use the model's verifyOTP method for robust checking
+    if (!user.verifyOTP(otp, 'verify')) {
+      return res.status(400).json({ message: "Invalid or expired OTP!" });
     }
     user.isVerified = true;
-    user.verifyOtp = undefined;
-    user.verifyOtpExpires = undefined;
+    user.clearOTP('verify');
     await user.save();
     return res.status(200).json({ message: "User verified successfully!" });
   } catch (error) {

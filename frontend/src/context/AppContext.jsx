@@ -205,10 +205,16 @@ export const AppContextProvider = (props) => {
         const token = response.data.token;
         localStorage.setItem('token', token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
+        // Store user email for OTP resend
+        if (userData && userData.email) {
+          localStorage.setItem('userEmail', userData.email);
+        } else if (userData && userData.data && userData.data.user && userData.data.user.email) {
+          localStorage.setItem('userEmail', userData.data.user.email);
+        } else if (credentials && credentials.email) {
+          localStorage.setItem('userEmail', credentials.email);
+        }
         setIsLoggedin(true);
         await getUserData();
-        
         return { success: true, data: response.data };
       } else {
         throw new Error('Invalid response from server');
@@ -238,10 +244,16 @@ export const AppContextProvider = (props) => {
         const token = response.data.token;
         localStorage.setItem('token', token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
+        // Store user email for OTP resend
+        if (userData && userData.email) {
+          localStorage.setItem('userEmail', userData.email);
+        } else if (userData && userData.data && userData.data.user && userData.data.user.email) {
+          localStorage.setItem('userEmail', userData.data.user.email);
+        } else if (userData && userData.data && userData.data.user && userData.data.user.email) {
+          localStorage.setItem('userEmail', userData.data.user.email);
+        }
         setIsLoggedin(true);
         await getUserData();
-        
         return { success: true, data: response.data };
       } else {
         throw new Error('Invalid response from server');
