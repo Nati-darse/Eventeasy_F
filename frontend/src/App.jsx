@@ -9,6 +9,7 @@ import Attendee from './Pages/Attendee.jsx';
 import Organizer from './Pages/Organizer.jsx';
 import OrganizerAttendees from './Pages/OrganizerAttendees.jsx';
 import Admin from './Pages/Admin.jsx';
+import AdminLogin from './Pages/AdminLogin.jsx';
 import SuperAdmin from './Pages/SuperAdmin.jsx';
 import UserManagement from './Pages/userManagement.jsx';
 import EventManagement from './Pages/eventManagement.jsx';
@@ -20,6 +21,7 @@ import SearchResults from './Pages/SearchResults.jsx';
 import MapComparison from './Pages/MapComparison.jsx';
 import { ToastContainer } from './Components/Toast.jsx';
 import { useToast } from './hooks/useToast.jsx';
+import ProtectedAdminRoute from './Components/ProtectedAdminRoute.jsx';
 
 export default function App() {
   // Check for dark mode preference
@@ -46,10 +48,27 @@ export default function App() {
         <Route path="/Attendee" element={<Attendee />} />
         <Route path="/Organizer_Dashboard" element={<Organizer />} />
         <Route path="/Organizer_Dashboard/attendees" element={<OrganizerAttendees />} />
-        <Route path="/admin" element={<Admin />}/>
-        <Route path="/super-admin" element={<SuperAdmin />}/>
-        <Route path="/admin/user-management" element={<UserManagement/>}/>
-        <Route path="/admin/event-management" element={<EventManagement />} />
+        <Route path="/admin" element={<AdminLogin />}/>
+        <Route path="/admin/dashboard" element={
+          <ProtectedAdminRoute>
+            <Admin />
+          </ProtectedAdminRoute>
+        }/>
+        <Route path="/super-admin" element={
+          <ProtectedAdminRoute requiredRole="super_admin">
+            <SuperAdmin />
+          </ProtectedAdminRoute>
+        }/>
+        <Route path="/admin/user-management" element={
+          <ProtectedAdminRoute>
+            <UserManagement/>
+          </ProtectedAdminRoute>
+        }/>
+        <Route path="/admin/event-management" element={
+          <ProtectedAdminRoute>
+            <EventManagement />
+          </ProtectedAdminRoute>
+        } />
         <Route path="/events/:eventId" element={<EventDetail />} />
         <Route path="/attend/:id" element={<AttendeeEventPage/>}/>
         <Route path="/payment/:eventId" element={<PaymentPage />} />

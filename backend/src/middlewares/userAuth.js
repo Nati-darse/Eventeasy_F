@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User"); // Make sure to import your User model
 
-const userAuth = (req, res, next) => {
+const userAuth = async (req, res, next) => {
   const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
   console.log("Token received:", token);
 
@@ -11,8 +12,12 @@ const userAuth = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = { id: decoded.id }; // <- ✅ Store in req.user, not req.body
+    // Fetch the user from the database
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+    req.user = user; // Attach the full user object to req.user
     next();
   } catch (err) {
     console.log("JWT error:", err.message);
