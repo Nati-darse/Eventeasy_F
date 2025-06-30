@@ -41,7 +41,7 @@ app.use(generalLimiter);
 // CORS configuration
 const allowedOrigins = [
   /^http:\/\/localhost:\d+$/, // Allow all localhost ports for dev
-  'https://event-easy-n4tha.vercel.app',
+  'https://eventeasy-f.vercel.app',
   // Add more production origins as needed
   'https://accounts.google.com',
   'https://www.googleapis.com'
