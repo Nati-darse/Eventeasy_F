@@ -38,7 +38,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
         { withCredentials: true }
       );
       
-      localStorage.removeItem('token');
+      localStorage.removeItem('token ');
       setUserData(null);
       setIsLoggedin(false);
       navigate('/');
