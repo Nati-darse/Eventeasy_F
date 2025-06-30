@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useToast } from '../hooks/useToast.jsx';
 
 const EmailVerify = () => {
   console.log("EmailVerify component rendered!"); // Add this to see if it's being called
@@ -9,6 +10,7 @@ const EmailVerify = () => {
   const [error, setError] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const navigate = useNavigate();
+  const { success, error: toastError } = useToast();
 
   const handleOtpChange = (e, index) => {
     const value = e.target.value;
@@ -30,7 +32,7 @@ const EmailVerify = () => {
       const userToken = localStorage.getItem("token");
 
       if (!userToken) {
-        alert("You are not logged in. Please log in first.");
+        toastError('You are not logged in. Please log in first.');
         navigate("/login");
         return;
       }
@@ -49,7 +51,7 @@ const EmailVerify = () => {
 
       if (response.status === 200) {
         setIsVerified(true);
-        alert("Email verified successfully!");
+        success('Email verified successfully!');
         navigate("/Attendee_Dashboard");
       }
     } catch (error) {

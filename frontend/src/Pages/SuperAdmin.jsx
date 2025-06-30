@@ -13,6 +13,7 @@ import {
   FaCalendarAlt,
   FaExclamationTriangle
 } from 'react-icons/fa';
+import { useToast } from '../hooks/useToast.jsx';
 
 const SuperAdmin = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -34,6 +35,7 @@ const SuperAdmin = () => {
       canModerateContent: false,
     },
   });
+  const { success, error } = useToast();
 
   useEffect(() => {
     fetchAnalytics();
@@ -86,10 +88,10 @@ const SuperAdmin = () => {
         },
       });
       fetchUsers();
-      alert('Admin created successfully!');
+      success('Admin created successfully!');
     } catch (error) {
       console.error('Error creating admin:', error);
-      alert('Failed to create admin: ' + (error.response?.data?.message || 'Unknown error'));
+      error('Failed to create admin: ' + (error.response?.data?.message || 'Unknown error'));
     }
   };
 
@@ -101,10 +103,10 @@ const SuperAdmin = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       fetchUsers();
-      alert('Admin permissions updated successfully!');
-    } catch (error) {
-      console.error('Error updating admin permissions:', error);
-      alert('Failed to update admin permissions');
+      success('Admin permissions updated successfully!');
+    } catch (err) {
+      console.error('Error updating admin permissions:', err);
+      error('Failed to update admin permissions');
     }
   };
 
@@ -117,10 +119,10 @@ const SuperAdmin = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       fetchUsers();
-      alert(`User ${suspend ? 'suspended' : 'unsuspended'} successfully!`);
-    } catch (error) {
-      console.error('Error toggling user suspension:', error);
-      alert('Failed to update user suspension status');
+      success(`User ${suspend ? 'suspended' : 'unsuspended'} successfully!`);
+    } catch (err) {
+      console.error('Error toggling user suspension:', err);
+      error('Failed to update user suspension status');
     }
   };
 
@@ -134,10 +136,10 @@ const SuperAdmin = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       fetchUsers();
-      alert('User deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('Failed to delete user');
+      success('User deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      error('Failed to delete user');
     }
   };
 

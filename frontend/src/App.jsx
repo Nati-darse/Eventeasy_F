@@ -19,7 +19,7 @@ import ThankYouPage from './Pages/ThankYouPage.jsx';
 import SearchResults from './Pages/SearchResults.jsx';
 import MapComparison from './Pages/MapComparison.jsx';
 import { ToastContainer } from './Components/Toast.jsx';
-import { useToast } from './hooks/useToast.js';
+import { useToast } from './hooks/useToast.jsx';
 
 export default function App() {
   // Check for dark mode preference

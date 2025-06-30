@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { FaMapMarkerAlt, FaCrosshairs, FaSearch } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { useToast } from '../hooks/useToast.jsx';
 
 const LocationFilter = ({ onLocationFilter, events = [] }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [searchRadius, setSearchRadius] = useState(10); // km
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [showLocationFilter, setShowLocationFilter] = useState(false);
+  const { error } = useToast();
 
   // Get user's current location
   const getCurrentLocation = () => {
@@ -25,10 +27,10 @@ const LocationFilter = ({ onLocationFilter, events = [] }) => {
           // Apply location filter
           filterEventsByLocation(location, searchRadius);
         },
-        (error) => {
-          console.error('Error getting location:', error);
+        (errorObj) => {
+          console.error('Error getting location:', errorObj);
           setIsLoadingLocation(false);
-          alert('Unable to get your location. Please check your browser settings.');
+          error('Unable to get your location. Please check your browser settings.');
         },
         {
           enableHighAccuracy: true,
@@ -38,7 +40,7 @@ const LocationFilter = ({ onLocationFilter, events = [] }) => {
       );
     } else {
       setIsLoadingLocation(false);
-      alert('Geolocation is not supported by your browser.');
+      error('Geolocation is not supported by your browser.');
     }
   };
 

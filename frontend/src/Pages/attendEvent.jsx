@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LeafletMapComponent from '../Components/LeafletMapComponent.jsx';
 import { motion } from 'framer-motion';
+import { useToast } from '../hooks/useToast.jsx';
 
 const AttendeeEventPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { success, error } = useToast();
 
   const [event, setEvent] = useState(null);
   const [attending, setAttending] = useState(false);
@@ -56,12 +58,12 @@ const AttendeeEventPage = () => {
       .then((data) => {
         if (data.success) {
           setAttending(true);
-          alert('Successfully registered for the event!');
+          success('Successfully registered for the event!');
         } else {
-          alert('Registration failed');
+          error('Registration failed');
         }
       })
-      .catch((error) => console.error('Error registering:', error));
+      .catch((err) => error('Error registering: ' + err.message));
   };
 
   const handleBuyTicket = () => {

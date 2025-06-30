@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Link } from 'react-router-dom';
 import LeafletMapComponent from '../Components/LeafletMapComponent.jsx';
 import SimpleEventFilter from '../Components/SimpleEventFilter.jsx';
+import { useToast } from '../hooks/useToast.jsx';
 
 // Define categories for filtering
 const categories = [
@@ -46,6 +47,8 @@ const AttendeePage = () => {
   const [reportReason, setReportReason] = useState('');
   const [reportDescription, setReportDescription] = useState('');
   const [reportStatusMessage, setReportStatusMessage] = useState('');
+
+  const { success, error } = useToast();
 
   // --- Filter Functions ---
   const applyFilters = (filters) => {
@@ -165,17 +168,17 @@ const AttendeePage = () => {
       });
 
       if (res.ok) {
-        alert('Review submitted successfully!');
+        success('Review submitted successfully!');
         setComments((prev) => ({ ...prev, [eventId]: '' }));
         setRatings((prev) => ({ ...prev, [eventId]: ''}));
         fetchReviews(eventId);
       } else {
         const errorData = await res.json();
-        alert(`Failed to submit review: ${errorData.message || 'Please try again.'}`);
+        error(`Failed to submit review: ${errorData.message || 'Please try again.'}`);
       }
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      alert('An error occurred while submitting your review.');
+    } catch (err) {
+      console.error('Error submitting review:', err);
+      error('An error occurred while submitting your review.');
     }
   };
 
@@ -234,7 +237,7 @@ const AttendeePage = () => {
       });
 
       if (response.status === 201) {
-        alert('Event reported successfully!');
+        success('Event reported successfully!');
         handleCloseReportModal();
       } else {
         setReportStatusMessage(response.data.message || 'Failed to report event. Please try again.');

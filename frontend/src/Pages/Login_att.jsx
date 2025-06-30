@@ -6,7 +6,7 @@ import { AppContent } from "../context/AppContext.jsx";
 import { FaCalendarAlt, FaEye, FaEyeSlash } from "react-icons/fa";
 import GoogleAuth from "../components/GoogleAuth.jsx";
 import { useFormValidation, ValidatedInput, validationRules } from "../components/FormValidation.jsx";
-import { useToast } from "../hooks/useToast.js";
+import { useToast } from "../hooks/useToast.jsx";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
 
 export default function AttendeeLogin() {
@@ -22,8 +22,7 @@ export default function AttendeeLogin() {
   const displayError = (message) => {
     error(message);
     showError(message);
-    // Fallback alert
-    alert(`Error: ${message}`);
+    // Removed alert fallback
   };
 
   // Helper function to show success with fallback
