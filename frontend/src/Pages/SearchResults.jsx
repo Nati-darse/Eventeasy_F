@@ -57,7 +57,7 @@ const SearchResults = () => {
       setError(null);
       
       try {
-        const response = await axios.get('https://eventeasy-56uy.onrender.com/Event-Easy/Event/events');
+        const response = await axios.get('https://event-easy.onrender.com/Event-Easy/Event/events');
         let results = Array.isArray(response.data) ? response.data : [];
         
         // Filter by approved status

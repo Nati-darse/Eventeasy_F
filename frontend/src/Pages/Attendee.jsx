@@ -158,7 +158,7 @@ const AttendeePage = () => {
     }
 
     try {
-      const res = await fetch(`https://eventeasy-56uy.onrender.com/Event-Easy/review/${eventId}/review`, {
+              const res = await fetch(`https://event-easy.onrender.com/Event-Easy/review/${eventId}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ const AttendeePage = () => {
 
   const fetchReviews = async (eventId) => {
     try {
-      const response = await axios.get(`https://eventeasy-56uy.onrender.com/Event-Easy/review/${eventId}/reviews`);
+              const response = await axios.get(`https://event-easy.onrender.com/Event-Easy/review/${eventId}/reviews`);
       setReviews((prev) => ({ ...prev, [eventId]: response.data.reviews || [] }));
     } catch (error) {
       console.error(`Error fetching reviews for event ${eventId}:`, error);
@@ -226,7 +226,7 @@ const AttendeePage = () => {
     }
 
     try {
-      const response = await axios.post(`https://eventeasy-56uy.onrender.com/Event-Easy/report/${reportingEvent._id}`, {
+              const response = await axios.post(`https://event-easy.onrender.com/Event-Easy/report/${reportingEvent._id}`, {
         reason: reportReason,
         description: reportDescription,
       }, {
@@ -250,7 +250,7 @@ const AttendeePage = () => {
 
   // --- Effects and Event Fetching ---
   useEffect(() => {
-    fetch('https://eventeasy-56uy.onrender.com/Event-Easy/Event/events')
+            fetch('https://event-easy.onrender.com/Event-Easy/Event/events')
       .then((res) => res.json())
       .then((data) => {
         const allEvents = Array.isArray(data) ? data : (data.events || []);

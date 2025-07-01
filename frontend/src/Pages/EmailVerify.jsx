@@ -43,7 +43,7 @@ const EmailVerify = () => {
       const otpString = otp.join("");
 
       const response = await axios.post(
-        "https://eventeasy-56uy.onrender.com/Event-Easy/users/verify-otp",
+        "https://event-easy.onrender.com/Event-Easy/users/verify-otp",
         { otp: otpString },
         {
           withCredentials: true,
@@ -90,7 +90,7 @@ const EmailVerify = () => {
         return;
       }
       const response = await axios.post(
-        "https://eventeasy-56uy.onrender.com/Event-Easy/users/send-verify-otp",
+        "https://event-easy.onrender.com/Event-Easy/users/send-verify-otp",
         { email: userEmail },
         {
           withCredentials: true,

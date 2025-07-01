@@ -41,7 +41,7 @@ const OrganizerAttendees = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      const response = await axios.get('https://eventeasy-56uy.onrender.com/Event-Easy/Event/organizer-events', {
+      const response = await axios.get('https://event-easy.onrender.com/Event-Easy/Event/organizer-events', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -65,7 +65,7 @@ const OrganizerAttendees = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      const response = await axios.get(`https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${eventId}/attendees`, {
+      const response = await axios.get(`https://event-easy.onrender.com/Event-Easy/Event/events/${eventId}/attendees`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

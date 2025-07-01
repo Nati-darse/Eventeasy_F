@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/Event-Easy/payment`;
+const API_URL = `${import.meta.env.VITE_API_URL || 'https://event-easy.onrender.com'}/Event-Easy/payment`;
 
 /**
  * Payment Service

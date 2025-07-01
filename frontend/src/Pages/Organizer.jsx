@@ -56,7 +56,7 @@ const Organizer = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await axios.get('https://eventeasy-56uy.onrender.com/Event-Easy/Event/organizer-events', {
+      const response = await axios.get('https://event-easy.onrender.com/Event-Easy/Event/organizer-events', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -180,7 +180,7 @@ const Organizer = () => {
       });
 
       const res = await axios.post(
-        'https://eventeasy-56uy.onrender.com/Event-Easy/Event/createEvents',
+        'https://event-easy.onrender.com/Event-Easy/Event/createEvents',
         formData,
         {
           headers: {

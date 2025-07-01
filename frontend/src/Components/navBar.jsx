@@ -33,7 +33,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
   const logout = async () => {
     try {
       await axios.post(
-        'https://eventeasy-56uy.onrender.com/Event-Easy/users/logout',
+        'https://event-easy.onrender.com/Event-Easy/users/logout',
         {},
         { withCredentials: true }
       );

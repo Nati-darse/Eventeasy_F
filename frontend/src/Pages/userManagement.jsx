@@ -12,7 +12,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("https://eventeasy-56uy.onrender.com/Event-Easy/users/users", {
+      const res = await axios.get("https://event-easy.onrender.com/Event-Easy/users/users", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -29,7 +29,7 @@ const UserManagement = () => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      await axios.delete(`https://eventeasy-56uy.onrender.com/Event-Easy/users/users/${userId}`, {
+              await axios.delete(`https://event-easy.onrender.com/Event-Easy/users/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

@@ -10,7 +10,7 @@ const EventDetail = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await axios.get(`https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${eventId}`, {
+        const res = await axios.get(`https://event-easy.onrender.com/Event-Easy/Event/events/${eventId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },

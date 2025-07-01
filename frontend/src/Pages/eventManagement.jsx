@@ -14,7 +14,7 @@ const EventManagement = () => {
   const fetchEvents = async () => {
     try {
       
-      const res = await axios.get("https://eventeasy-56uy.onrender.com/Event-Easy/Event/events", {
+      const res = await axios.get("https://event-easy.onrender.com/Event-Easy/Event/events", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -32,7 +32,7 @@ const EventManagement = () => {
   const updateStatus = async (eventId, newStatus) => {
     try {
       await axios.put(
-        `https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${eventId}/status`,
+        `https://event-easy.onrender.com/Event-Easy/Event/events/${eventId}/status`,
         { status: newStatus },
         {
           headers: {
@@ -50,7 +50,7 @@ const EventManagement = () => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
-      await axios.delete(`https://eventeasy-56uy.onrender.com/Event-Easy/Event/events/${eventId}`, {
+              await axios.delete(`https://event-easy.onrender.com/Event-Easy/Event/events/${eventId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
