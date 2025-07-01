@@ -11,7 +11,7 @@ import {
   FaSignOutAlt,
 } from 'react-icons/fa';
 import { AppContent } from '../context/AppContext.jsx';
-import GoogleTranslate from './GoogleTranslate.jsx';
+import GoogleTranslate from '../components/GoogleTranslate.jsx';
 import axios from 'axios';
 
 const Navbar = ({ darkMode, toggleDarkMode }) => {
