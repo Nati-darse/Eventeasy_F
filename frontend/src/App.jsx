@@ -19,6 +19,7 @@ import PaymentPage from './Pages/PaymentPage.jsx';
 import ThankYouPage from './Pages/ThankYouPage.jsx';
 import SearchResults from './Pages/SearchResults.jsx';
 import MapComparison from './Pages/MapComparison.jsx';
+import UserProfile from './Pages/UserProfile.jsx';
 import { useToast } from './hooks/useToast.jsx';
 import ProtectedAdminRoute from './Components/ProtectedAdminRoute.jsx';
 
@@ -75,6 +76,7 @@ export default function App() {
         <Route path="/payment/thank-you" element={<ThankYouPage />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/map-comparison" element={<MapComparison />} />
+        <Route path="/profile" element={<UserProfile />} />
       </Routes>
     </div>
   );
