@@ -19,7 +19,6 @@ import PaymentPage from './Pages/PaymentPage.jsx';
 import ThankYouPage from './Pages/ThankYouPage.jsx';
 import SearchResults from './Pages/SearchResults.jsx';
 import MapComparison from './Pages/MapComparison.jsx';
-import { ToastContainer } from './Components/Toast.jsx';
 import { useToast } from './hooks/useToast.jsx';
 import ProtectedAdminRoute from './Components/ProtectedAdminRoute.jsx';
 
@@ -38,7 +37,7 @@ export default function App() {
 
   return (
     <div className={darkMode ? 'dark' : ''}>
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      {/* ToastContainer temporarily removed for debugging */}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/Classify" element={<Classify_SU />} />
