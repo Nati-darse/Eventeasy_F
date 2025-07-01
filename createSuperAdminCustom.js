@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const User = require('./backend/src/models/User');
 
 // Replace these with your actual values
-const MONGO_URI = 'mongodb+srv://root:passpro@cluster-1.9u8zstf.mongodb.net/';
+const MONGO_URI = 'mongodb+srv://root:passpro@cluster-1.9u8zstf.mongodb.net/event-easy';
 const SUPER_ADMIN_EMAIL = 'natnaeldarsema@gmail.com'; // Change this to your email
 const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!'; // Change this to your password
 
@@ -12,59 +13,29 @@ const createSuperAdmin = async () => {
     await mongoose.connect(MONGO_URI);
     console.log('Connected to MongoDB');
 
-    // Define User schema (simplified version)
-    const userSchema = new mongoose.Schema({
-      name: String,
-      email: { type: String, unique: true },
-      password: String,
-      role: { type: String, default: 'attendee' },
-      isVerified: { type: Boolean, default: false },
-      adminPermissions: {
-        canManageUsers: Boolean,
-        canManageEvents: Boolean,
-        canManageReports: Boolean,
-        canViewAnalytics: Boolean,
-        canModerateContent: Boolean,
-      }
-    });
+    // Always select password explicitly due to select: false
+    let user = await User.findOne({ email: SUPER_ADMIN_EMAIL }).select('+password');
 
-    const User = mongoose.model('User', userSchema);
-
-    // Check if super admin already exists
-    const existingSuperAdmin = await User.findOne({ email: SUPER_ADMIN_EMAIL });
-    
-    if (existingSuperAdmin) {
+    if (user) {
       console.log('Super admin already exists. Updating password...');
-      
-      // Update password
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(SUPER_ADMIN_PASSWORD, saltRounds);
-      
-      existingSuperAdmin.password = hashedPassword;
-      existingSuperAdmin.role = 'super_admin';
-      existingSuperAdmin.isVerified = true;
-      existingSuperAdmin.adminPermissions = {
+      user.password = SUPER_ADMIN_PASSWORD; // Will be hashed by pre-save hook
+      user.role = 'super_admin';
+      user.isVerified = true;
+      user.adminPermissions = {
         canManageUsers: true,
         canManageEvents: true,
         canManageReports: true,
         canViewAnalytics: true,
         canModerateContent: true,
       };
-      
-      await existingSuperAdmin.save();
+      await user.save();
       console.log('Super admin password updated successfully!');
     } else {
       console.log('Creating new super admin...');
-      
-      // Hash password
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(SUPER_ADMIN_PASSWORD, saltRounds);
-      
-      // Create super admin
-      const superAdmin = new User({
+      user = new User({
         name: 'Super Admin',
         email: SUPER_ADMIN_EMAIL,
-        password: hashedPassword,
+        password: SUPER_ADMIN_PASSWORD, // Will be hashed by pre-save hook
         role: 'super_admin',
         isVerified: true,
         adminPermissions: {
@@ -75,16 +46,18 @@ const createSuperAdmin = async () => {
           canModerateContent: true,
         },
       });
-      
-      await superAdmin.save();
+      await user.save();
       console.log('Super admin created successfully!');
     }
+
+    // Print the password hash for debug
+    const savedUser = await User.findOne({ email: SUPER_ADMIN_EMAIL }).select('+password');
+    console.log('Super admin password hash in DB:', savedUser.password);
 
     console.log('Super Admin Credentials:');
     console.log('Email:', SUPER_ADMIN_EMAIL);
     console.log('Password:', SUPER_ADMIN_PASSWORD);
     console.log('Role: super_admin');
-    
   } catch (error) {
     console.error('Error creating super admin:', error);
   } finally {

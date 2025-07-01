@@ -196,6 +196,13 @@ class AuthController {
 
       // Find user by email
       const user = await User.findOne({ email }).select('+password');
+      console.log('🔍 Admin login attempt for:', email);
+      console.log('👤 User found:', !!user);
+      if (user) {
+        console.log('🔑 User password in DB:', user.password ? 'EXISTS' : 'MISSING');
+        console.log('👑 User role:', user.role);
+        console.log('✅ User verified:', user.isVerified);
+      }
       if (!user) {
         return res.status(401).json({
           success: false,
@@ -228,7 +235,10 @@ class AuthController {
       }
 
       // Verify password
+      console.log('🔐 Comparing passwords...');
+      console.log('📝 Password provided:', password);
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      console.log('✅ Password valid:', isPasswordValid);
       if (!isPasswordValid) {
         return res.status(401).json({
           success: false,
