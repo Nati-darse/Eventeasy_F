@@ -1,5 +1,9 @@
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://event-easy.onrender.com';
+const API_BASE_URL = 'https://event-easy.onrender.com'; // Temporarily hardcoded for testing
+
+// Debug: Log the API URL being used
+console.log('🔗 API URL being used:', API_BASE_URL);
+console.log('🔗 Environment variable VITE_API_URL:', import.meta.env.VITE_API_URL);
 
 export const API_ENDPOINTS = {
   // Auth endpoints
